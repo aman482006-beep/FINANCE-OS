@@ -52,7 +52,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v7
         with:
-          name: playwright-report
+          name: ui-review-screenshots
           path: |
             playwright-report/
             test-results/
