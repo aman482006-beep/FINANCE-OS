@@ -40,6 +40,8 @@ jobs:
           node-version: 24
           package-manager-cache: false
       - run: npm install --no-audit --no-fund
+      - name: Build production preview
+        run: npm run build
       - name: Install Playwright browser
         run: npx playwright install --with-deps chromium
       - name: Run browser tests and axe accessibility scan
