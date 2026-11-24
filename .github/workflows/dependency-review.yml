@@ -16,6 +16,7 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: 24
+          package-manager-cache: false
       - name: Install dependency tree
         run: npm install --ignore-scripts --no-audit --no-fund
       - name: Audit all direct and transitive npm dependencies
