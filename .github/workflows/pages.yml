@@ -29,7 +29,7 @@ jobs:
         env:
           GITHUB_PAGES: "true"
       - name: Install Playwright Chromium
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install chromium
       - name: Verify production preview at GitHub Pages base path
         run: npm run test:e2e
         env:
