@@ -17,7 +17,7 @@ test("dashboard and primary navigation render", async ({ page }) => {
 test("learning completion persists across reload", async ({ page }) => {
   await page.getByRole("button", { name: "Learn", exact: true }).click();
   await page.getByRole("button", { name: /Simple vs compound interest/ }).click();
-  await expect(page.getByRole("heading", { name: "What is finance?" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Simple vs compound interest" })).toBeVisible();
   await page.getByRole("button", { name: /Mark lesson complete/ }).click();
   await page.reload();
   await page.getByRole("button", { name: "Learn", exact: true }).click();
