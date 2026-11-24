@@ -158,7 +158,7 @@ button { cursor: pointer; }
 .learn-summary { gap: 16px; margin: 0 0 19px; }
 .learn-summary > div:first-child { gap: 12px; color: #1d8659; }
 .learn-summary b { color: #273c31; font-size: 13px; }
-.learn-summary small { color: #74847b; font-size: 11px; }
+.learn-summary small { color: #53665a; font-size: 11px; }
 .searchbox { padding: 0 12px; border: 1px solid #dce7e0; border-radius: 9px; background: #fff; color: #809087; }
 .searchbox input { width: 220px; padding: 10px 0; color: #20352a; font-size: 13px; }
 .searchbox input::placeholder { color: #9aa79f; }
@@ -166,16 +166,16 @@ button { cursor: pointer; }
 .module-card { padding: 0; }
 .module-header { gap: 15px; padding: 19px 21px; background: #f8faf9; }
 .module-header h3 { margin: 0 0 4px; color: #263a2f; font-size: 15px; }
-.module-header p { color: #75847c; font-size: 12px; }
-.module-count { color: #44825e; font: 10px var(--mono); }
+.module-header p { color: #53665a; font-size: 12px; }
+.module-count { color: #21683f; font: 10px var(--mono); }
 .lesson-list { padding: 0 21px; }
 .lesson-item { gap: 13px; padding: 14px 0; border-top-color: #edf1ee; }
 .check-circle { width: 19px; height: 19px; border-color: #b7c7bd; }
 .check-circle.checked { border-color: #21885c; background: #21885c; color: #fff; }
 .lesson-name b { color: #2a3d32; font-size: 13px; }
-.lesson-name small { margin-top: 4px; color: #74837a; font-size: 11px; }
-.level-tag { padding: 6px 8px; border-radius: 5px; background: #f0f5f2; color: #60786a; font: 9px var(--mono); }
-.duration { gap: 6px; color: #738279; font: 10px var(--mono); }
+.lesson-name small { margin-top: 4px; color: #53665a; font-size: 11px; }
+.level-tag { padding: 6px 8px; border-radius: 5px; background: #f0f5f2; color: #405e4c; font: 9px var(--mono); }
+.duration { gap: 6px; color: #53665a; font: 10px var(--mono); }
 .round-arrow.small { width: 29px; height: 29px; }
 .market-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .markets-layout { grid-template-columns: minmax(0, 1.45fr) minmax(275px, .75fr); gap: 16px; }
@@ -184,7 +184,7 @@ button { cursor: pointer; }
 .table-head { padding: 11px 9px; border-bottom-color: #e5ece8; color: #75847b; font: 10px var(--mono); }
 .watch-row { padding: 14px 9px; border-bottom-color: #edf1ee; color: #34483d; font-size: 12px; }
 .watch-row small { margin-top: 3px; color: #839087; font-size: 11px; }
-.disclaimer { gap: 8px; color: #74847b; font-size: 11px; line-height: 1.55; }
+.disclaimer { gap: 8px; color: #53665a; font-size: 11px; line-height: 1.55; }
 .order-panel h3 { margin-bottom: 20px; }
 .segmented { padding: 4px; border: 1px solid #e5ece8; border-radius: 9px; background: #f4f7f5; }
 .segmented button { padding: 9px; border-radius: 7px; color: #6e7e74; font-size: 12px; font-weight: 650; }
