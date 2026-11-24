@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import fs from "node:fs";
 import path from "node:path";
 
-const output = path.join(process.cwd(), "ui-review-screenshots");
+const output = path.join(process.cwd(), "test-results", "ui-review-screenshots");
 fs.mkdirSync(path.join(output, "desktop"), { recursive: true });
 fs.mkdirSync(path.join(output, "mobile"), { recursive: true });
 
@@ -54,4 +54,4 @@ test("capture desktop and mobile UI for a visual review", async ({ page }) => {
       animations: "disabled"
     });
   }
-});
+  // Temporary export trigger: the base workflow only uploads screenshots on failure.\n  expect(false, "Temporary diagnostic run: export screenshots for human visual review").toBe(true);\n});\n
