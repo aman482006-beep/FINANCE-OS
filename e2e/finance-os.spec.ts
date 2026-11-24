@@ -16,7 +16,7 @@ test("dashboard and primary navigation render", async ({ page }) => {
 
 test("learning completion persists across reload", async ({ page }) => {
   await page.getByRole("button", { name: "Learn", exact: true }).click();
-  await page.getByRole("button", { name: /Simple vs compound interest/ }).click();
+  await page.getByRole("button", { name: /Simple vs compound interest Calculate how money changes/ }).click();
   await expect(page.getByRole("heading", { name: "Simple vs compound interest" })).toBeVisible();
   await page.getByRole("button", { name: /Mark lesson complete/ }).click();
   await page.reload();
@@ -50,7 +50,7 @@ test("DCF workbench calculates a multi-year forecast and rejects bad assumptions
   await page.getByLabel("Terminal growth (%)").fill("15");
   await expect(page.getByRole("alert")).toContainText("Terminal growth must be");
   await page.getByLabel("Terminal growth (%)").fill("4");
-  await expect(page.getByText("Enterprise value")).toBeVisible();
+  await expect(page.getByText("Enterprise value", { exact: true })).toBeVisible();
 });
 
 test("primary screens pass axe WCAG 2.1 A/AA checks", async ({ page }) => {
