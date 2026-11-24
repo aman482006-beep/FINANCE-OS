@@ -16,12 +16,12 @@ test("dashboard and primary navigation render", async ({ page }) => {
 
 test("learning completion persists across reload", async ({ page }) => {
   await page.getByRole("button", { name: "Learn", exact: true }).click();
-  await page.getByRole("button", { name: /What is finance\?/ }).click();
+  await page.getByRole("button", { name: /Simple vs compound interest/ }).click();
   await expect(page.getByRole("heading", { name: "What is finance?" })).toBeVisible();
   await page.getByRole("button", { name: /Mark lesson complete/ }).click();
   await page.reload();
   await page.getByRole("button", { name: "Learn", exact: true }).click();
-  await expect(page.getByText("1/3 DONE")).toBeVisible();
+  await expect(page.getByText("2/3 DONE")).toBeVisible();
 });
 
 test("paper trading prevents overselling", async ({ page }) => {
