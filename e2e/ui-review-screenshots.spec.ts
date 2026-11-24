@@ -54,4 +54,6 @@ test("capture desktop and mobile UI for a visual review", async ({ page }) => {
       animations: "disabled"
     });
   }
-  // Temporary export trigger: the base workflow only uploads screenshots on failure.\n  expect(false, "Temporary diagnostic run: export screenshots for human visual review").toBe(true);\n});\n
+  // Temporary export trigger: the base workflow only uploads screenshots on failure.
+  expect(false, "Temporary diagnostic run: export screenshots for human visual review").toBe(true);
+});
