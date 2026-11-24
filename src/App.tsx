@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Activity, ArrowDownRight, ArrowRight, ArrowUpRight, BarChart3, BookOpen, BriefcaseBusiness, BrainCircuit, Check, ChevronDown, ChevronRight, CircleHelp, Clock3, Coins, Compass, GraduationCap, LayoutDashboard, LineChart, Menu, Newspaper, Plus, Search, Send, ShieldCheck, Sparkles, Target, TrendingUp, Wallet, X, Zap } from "lucide-react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { curriculum, newsCases, tracks, watchlist } from "./data";
@@ -154,7 +154,7 @@ export default function App() {
   </div>;
 }
 
-function PageTitle({eyebrow, title, description, action}: {eyebrow: string; title: string; description: string; action?: React.ReactNode}) {
+function PageTitle({eyebrow, title, description, action}: {eyebrow: string; title: string; description: string; action?: ReactNode}) {
   return <div className="page-title"><div><div className="eyebrow">{eyebrow}</div><h1>{title}</h1><p>{description}</p></div>{action}</div>;
 }
 function Overview({progress, completed, total, go, cash, invested, trades}: {progress:number; completed:number; total:number; go:(p:Page)=>void; cash:number; invested:number; trades:number}) {
