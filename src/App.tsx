@@ -2,6 +2,9 @@ import { useMemo, useState } from "react";
 import { Activity, ArrowDownRight, ArrowRight, ArrowUpRight, BarChart3, BookOpen, BriefcaseBusiness, BrainCircuit, Check, ChevronDown, ChevronRight, CircleHelp, Clock3, Coins, Compass, GraduationCap, LayoutDashboard, LineChart, Menu, Newspaper, Plus, Search, Send, ShieldCheck, Sparkles, Target, TrendingUp, Wallet, X, Zap } from "lucide-react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { curriculum, newsCases, tracks, watchlist } from "./data";
+import { deriveHoldings, executeSimulatedOrder } from "./lib/simulator";
+import { calculateDcf } from "./lib/finance";
+import { reviewAnalysis } from "./lib/review";
 
 type Page = "Overview" | "Learn" | "Markets" | "News Lab" | "Career" | "Workbench" | "My Progress" | "AI Mentor";
 type Trade = { symbol: string; side: "BUY" | "SELL"; quantity: number; price: number; date: string };
@@ -39,6 +42,7 @@ export default function App() {
   const [activeNews, setActiveNews] = useState(1);
   const [newsAnswer, setNewsAnswer] = useState("");
   const [newsSubmitted, setNewsSubmitted] = useState(false);
+  const [newsReview, setNewsReview] = useState<ReturnType<typeof reviewAnalysis> | null>(null);
   const [tradeSymbol, setTradeSymbol] = useState("RELIANCE");
   const [tradeQty, setTradeQty] = useState("1");
   const [tradeSide, setTradeSide] = useState<"BUY" | "SELL">("BUY");
@@ -47,11 +51,7 @@ export default function App() {
   const allLessons = curriculum.flatMap(m => m.lessons);
   const progress = Math.round(completed.length / allLessons.length * 100);
   const totalLessons = allLessons.length;
-  const holdings = useMemo(() => {
-    const result: Record<string, number> = {};
-    trades.forEach(t => { result[t.symbol] = (result[t.symbol] || 0) + (t.side === "BUY" ? t.quantity : -t.quantity); });
-    return result;
-  }, [trades]);
+  const holdings = useMemo(() => deriveHoldings(trades.map(t => ({ ...t, executedAt: t.date }))), [trades]);
   const invested = Object.entries(holdings).reduce((sum, [symbol, qty]) => sum + qty * (watchlist.find(s => s.symbol === symbol)?.price || 0), 0);
   const save = (key: string, value: unknown) => { try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* storage may be unavailable */ } };
   const go = (next: Page) => { setPage(next); setMobileNav(false); setNotice(""); };
@@ -61,16 +61,39 @@ export default function App() {
   };
   const executeTrade = () => {
     const security = watchlist.find(s => s.symbol === tradeSymbol);
-    const qty = Number(tradeQty);
-    if (!security || !Number.isInteger(qty) || qty <= 0) { setNotice("Enter a valid symbol and whole-number quantity."); return; }
-    const current = holdings[tradeSymbol] || 0;
-    if (tradeSide === "SELL" && current < qty) { setNotice("You cannot sell more units than you hold."); return; }
-    const gross = security.price * qty;
-    if (tradeSide === "BUY" && cash < gross) { setNotice("Insufficient virtual cash for this order."); return; }
-    const nextCash = cash + (tradeSide === "BUY" ? -gross : gross);
-    const nextTrades = [{ symbol: tradeSymbol, side: tradeSide, quantity: qty, price: security.price, date: new Date().toLocaleString() }, ...trades];
-    setCash(nextCash); setTrades(nextTrades); save("fos-cash", nextCash); save("fos-trades", nextTrades);
-    setNotice(`${tradeSide} order simulated: ${qty} ${tradeSymbol} at ${money(security.price)}. No real order was placed.`);
+    if (!security) { setNotice("Select a supported instrument."); return; }
+    const result = executeSimulatedOrder({
+      symbol: tradeSymbol,
+      side: tradeSide,
+      quantity: Number(tradeQty),
+      price: security.price,
+      cash,
+      currentPosition: holdings[tradeSymbol] || 0
+    });
+    if (!result.ok) {
+      const messages: Record<typeof result.reason, string> = {
+        INVALID_SYMBOL: "The selected instrument is invalid.",
+        INVALID_SIDE: "Select buy or sell.",
+        INVALID_QUANTITY: "Enter a positive whole-number quantity.",
+        INVALID_PRICE: "The demo price is invalid. No order was placed.",
+        INVALID_CASH: "The simulated account state is invalid. Reset the demo account before continuing.",
+        INSUFFICIENT_CASH: "Insufficient virtual cash for this order.",
+        INSUFFICIENT_HOLDINGS: "You cannot sell more units than you hold."
+      };
+      setNotice(messages[result.reason]);
+      return;
+    }
+    const nextTrade: Trade = { ...result.trade, date: result.trade.executedAt };
+    const nextTrades = [nextTrade, ...trades];
+    setCash(result.cashAfter);
+    setTrades(nextTrades);
+    save("fos-cash", result.cashAfter);
+    save("fos-trades", nextTrades);
+    setNotice(`${tradeSide} order simulated: ${result.trade.quantity} ${tradeSymbol} at ${money(result.trade.price)}. No real order was placed.`);
+  };
+  const submitNews = () => {
+    setNewsReview(reviewAnalysis(newsAnswer));
+    setNewsSubmitted(true);
   };
   const submitMentor = () => {
     const question = mentorInput.trim(); if (!question) return;
@@ -95,7 +118,7 @@ export default function App() {
         {page === "Overview" && <Overview progress={progress} completed={completed.length} total={total} go={go} cash={cash} invested={invested} trades={trades.length} />}
         {page === "Learn" && <Learn completed={completed} markComplete={markComplete} setSelectedLesson={setSelectedLesson} search={search} setSearch={setSearch}/>}
         {page === "Markets" && <Markets cash={cash} invested={invested} holdings={holdings} trades={trades} tradeSymbol={tradeSymbol} setTradeSymbol={setTradeSymbol} tradeQty={tradeQty} setTradeQty={setTradeQty} tradeSide={tradeSide} setTradeSide={setTradeSide} executeTrade={executeTrade}/>}
-        {page === "News Lab" && <NewsLab active={activeNews} setActive={id => {setActiveNews(id); setNewsAnswer(""); setNewsSubmitted(false);}} answer={newsAnswer} setAnswer={setNewsAnswer} submitted={newsSubmitted} submit={() => setNewsSubmitted(true)}/>}
+        {page === "News Lab" && <NewsLab active={activeNews} setActive={id => {setActiveNews(id); setNewsAnswer(""); setNewsSubmitted(false); setNewsReview(null);}} answer={newsAnswer} setAnswer={setNewsAnswer} submitted={newsSubmitted} review={newsReview} submit={submitNews}/>}
         {page === "Career" && <Career />}
         {page === "Workbench" && <Workbench />}
         {page === "My Progress" && <Progress completed={completed} total={total} progress={progress} trades={trades.length}/>}
@@ -131,14 +154,78 @@ function Markets({cash,invested,holdings,trades,tradeSymbol,setTradeSymbol,trade
  return <><PageTitle eyebrow="MARKET SIMULATION LAB" title="Practise your decisions." description="Explore a sample watchlist and place simulated orders using virtual capital." action={<span className="tag"><span className="tag-dot"/> MARKET DATA: DEMO</span>}/><div className="stats-grid market-stats"><Stat label="Available cash" value={money(cash)} sub="Virtual buying power" icon={Wallet} trend="No real money involved"/><Stat label="Holdings value" value={money(invested)} sub="Based on illustrative prices" icon={Coins} trend="Mark-to-demo-price"/><Stat label="Open positions" value={String(Object.values(holdings).filter(q=>q>0).length)} sub="Net positive holdings" icon={BriefcaseBusiness} trend="Paper portfolio"/></div><div className="markets-layout"><section className="panel"><div className="panel-head"><div><div className="eyebrow">INDIA WATCHLIST</div><h3>Market monitor</h3></div><span className="tag">ILLUSTRATIVE PRICES</span></div><div className="watch-table"><div className="table-head"><span>INSTRUMENT</span><span>LAST PRICE</span><span>CHANGE</span><span>HOLDING</span></div>{watchlist.map(s=><div className="watch-row" key={s.symbol}><div><b>{s.symbol}</b><small>{s.name}</small></div><b>{money(s.price)}</b><span className={s.change>=0?"positive":"negative"}>{s.change>=0?"+":""}{s.change.toFixed(2)}%</span><span>{holdings[s.symbol]||0}</span></div>)}</div><p className="disclaimer"><CircleHelp size={14}/> These are hardcoded illustrative prices for product demonstration, not live quotes.</p></section><section className="panel order-panel"><div className="eyebrow">VIRTUAL ORDER TICKET</div><h3>Place an order</h3><div className="segmented"><button className={tradeSide==="BUY"?"buy-active":""} onClick={()=>setTradeSide("BUY")}>Buy</button><button className={tradeSide==="SELL"?"sell-active":""} onClick={()=>setTradeSide("SELL")}>Sell</button></div><label>Instrument</label><select value={tradeSymbol} onChange={e=>setTradeSymbol(e.target.value)}>{watchlist.map(s=><option key={s.symbol} value={s.symbol}>{s.symbol} · {s.name}</option>)}</select><label>Quantity</label><input type="number" min="1" step="1" value={tradeQty} onChange={e=>setTradeQty(e.target.value)}/><div className="order-estimate"><span>Indicative price</span><b>{money(watchlist.find(s=>s.symbol===tradeSymbol)?.price||0)}</b></div><button className="primary-btn full-btn" onClick={executeTrade}>{tradeSide==="BUY"?"Simulate buy":"Simulate sell"} <ArrowRight size={14}/></button><p className="micro-note">Orders execute instantly at the static demo price. No exchange, broker or live feed is connected.</p></section></div><section className="panel history-panel"><div className="panel-head"><div><div className="eyebrow">YOUR DECISION LOG</div><h3>Order history</h3></div><span className="tag">{trades.length} ORDERS</span></div>{trades.length===0?<div className="empty-state">Your simulated orders will appear here. Start with a small position and record the reasoning behind it.</div>:<div className="trade-history">{trades.slice(0,8).map((t,i)=><div key={i}><span className={t.side==="BUY"?"buy-pill":"sell-pill"}>{t.side}</span><b>{t.symbol}</b><span>{t.quantity} units</span><span>{money(t.price)}</span><small>{t.date}</small></div>)}</div>}</section></>;
 }
 
-function NewsLab({active,setActive,answer,setAnswer,submitted,submit}:{active:number;setActive:(id:number)=>void;answer:string;setAnswer:(s:string)=>void;submitted:boolean;submit:()=>void}) {
- const item=newsCases.find(n=>n.id===active)!;
- return <><PageTitle eyebrow="FINANCIAL NEWS INTELLIGENCE" title="Read the event. Build the view." description="Practise turning a market headline into a defensible financial argument."/><div className="news-layout"><section className="news-main"><div className="news-feature"><div className="news-feature-top"><span className="tag">{item.category}</span><span>{item.date}</span></div><div className="news-illustration"><div className="news-ring ring-1"/><div className="news-ring ring-2"/><div className="news-symbol"><Newspaper size={28}/></div><span className="news-label">ANALYST BRIEFING</span></div><h2>{item.headline}</h2><p>{item.summary}</p><div className="source-note"><ShieldCheck size={15}/> Scenario created for practice · Not a live news report</div></div><div className="panel response-panel"><div className="eyebrow">YOUR ANALYSIS</div><h3>Think like an analyst</h3><p>{item.question}</p><textarea value={answer} onChange={e=>{setAnswer(e.target.value);}} placeholder="Structure your response. State your assumptions, explain the transmission channel and include a counterargument..." rows={6}/><div className="response-actions"><span>{answer.trim().split(/\s+/).filter(Boolean).length} words</span><button className="primary-btn" onClick={submit} disabled={answer.trim().length<20}>Submit analysis <ArrowRight size={14}/></button></div>{submitted&&<div className="feedback-box"><b><Sparkles size={15}/> Submission saved for review</b><p>Good analysts separate facts, mechanisms and assumptions. Review your response: have you explained the causal chain, identified who benefits, and included a credible counterargument? AI evaluation is not connected in this demo.</p></div>}</div></section><aside className="news-sidebar panel"><div className="eyebrow">CASE LIBRARY</div><h3>Practice briefings</h3>{newsCases.map(n=><button key={n.id} className={`case-item ${active===n.id?"selected":""}`} onClick={()=>setActive(n.id)}><span>{String(n.id).padStart(2,"0")} · {n.category}</span><b>{n.headline}</b><small>5–10 min exercise <ChevronRight size={13}/></small></button>)}<div className="tip-card"><Target size={17}/><b>What good analysis looks like</b><p>Mechanism → affected parties → magnitude → uncertainty → alternative explanation.</p></div></aside></div></>;
+function NewsLab({active,setActive,answer,setAnswer,submitted,review,submit}:{active:number;setActive:(id:number)=>void;answer:string;setAnswer:(s:string)=>void;submitted:boolean;review:ReturnType<typeof reviewAnalysis>|null;submit:()=>void}) {
+  const item=newsCases.find(n=>n.id===active)!;
+  return <><PageTitle eyebrow="FINANCIAL NEWS INTELLIGENCE" title="Read the event. Build the view." description="Practise turning a market development into a structured financial argument."/>
+    <div className="news-layout">
+      <section className="news-main">
+        <div className="news-feature">
+          <div className="news-feature-top"><span className="tag">{item.category}</span><span>{item.date}</span></div>
+          <div className="news-illustration"><div className="news-ring ring-1"/><div className="news-ring ring-2"/><div className="news-symbol"><Newspaper size={28}/></div><span className="news-label">ANALYST BRIEFING</span></div>
+          <h2>{item.headline}</h2><p>{item.summary}</p>
+          <div className="source-note"><ShieldCheck size={15}/> Scenario created for practice · Not a live news report</div>
+        </div>
+        <div className="panel response-panel">
+          <div className="eyebrow">YOUR ANALYSIS</div><h3>Think like an analyst</h3><p>{item.question}</p>
+          <label className="sr-only" htmlFor="news-analysis">Your written analysis</label>
+          <textarea id="news-analysis" value={answer} onChange={e=>setAnswer(e.target.value)} placeholder="Structure your response. State assumptions, explain mechanisms and include a counterargument..." rows={7} maxLength={8000}/>
+          <div className="response-actions"><span>{answer.trim().split(/\s+/).filter(Boolean).length} words · {answer.length}/8000</span><button className="primary-btn" onClick={submit} disabled={answer.trim().length<30}>Review my analysis <ArrowRight size={14}/></button></div>
+          {submitted&&review&&<section className="review-results" aria-live="polite">
+            <div className="review-summary"><div><span className="eyebrow">STRUCTURED REVIEW</span><strong>{review.total}<small> / {review.maxScore}</small></strong><b>{review.band}</b></div><p>This is a transparent keyword-and-structure rubric, not an AI judgement or a prediction of market outcomes.</p></div>
+            <div className="review-dimensions">{review.dimensions.map(d=><div className="review-dimension" key={d.dimension}><div><b>{d.label}</b><strong>{d.score}/4</strong></div><div className="review-meter"><span style={{width:`${d.score/4*100}%`}}/></div><p>{d.feedback}</p></div>)}</div>
+            {review.strengths.length>0&&<div className="review-feedback"><b>What is already present</b><p>{review.strengths.join(" · ")}</p></div>}
+            {review.nextSteps.length>0&&<div className="review-feedback"><b>Improve next</b><ul>{review.nextSteps.map((step,i)=><li key={i}>{step}</li>)}</ul></div>}
+          </section>}
+        </div>
+      </section>
+      <aside className="news-sidebar panel"><div className="eyebrow">CASE LIBRARY</div><h3>Practice briefings</h3>{newsCases.map(n=><button key={n.id} className={`case-item ${active===n.id?"selected":""}`} onClick={()=>setActive(n.id)}><span>{String(n.id).padStart(2,"0")} · {n.category}</span><b>{n.headline}</b><small>5–10 min exercise <ChevronRight size={13}/></small></button>)}<div className="tip-card"><Target size={17}/><b>What good analysis looks like</b><p>Mechanism → affected parties → magnitude → uncertainty → alternative explanation.</p></div></aside>
+    </div>
+  </>;
 }
 
 function Career() {const [track,setTrack]=useState(0);return <><PageTitle eyebrow="CAREER DEVELOPMENT" title="Choose the work you want to master." description="Explore role pathways and the practical capabilities associated with each one."/><div className="career-layout"><div className="track-list">{tracks.map((t,i)=><button className={track===i?"selected":""} key={t.name} onClick={()=>setTrack(i)}><span>{String(i+1).padStart(2,"0")}</span><b>{t.name}</b><ChevronRight size={15}/></button>)}</div><section className="panel track-detail"><div className="eyebrow">CAREER TRACK · {String(track+1).padStart(2,"0")}</div><h2>{tracks[track].name}</h2><p>Build the knowledge, technical skills and judgement needed to perform entry-level tasks in this area. The pathway combines learning with practical assignments.</p><h3>Core capabilities</h3><div className="skill-chips">{tracks[track].skills.map(s=><span key={s}>{s}</span>)}</div><div className="capstone-box"><div className="capstone-icon"><BriefcaseBusiness size={18}/></div><div><b>Suggested practical assignment</b><p>Complete a structured case, document assumptions, show your calculations and present a recommendation with risks and limitations.</p><span className="tag">CAPSTONE TEMPLATE · COMING NEXT</span></div></div><div className="notice-inline"><ShieldCheck size={15}/> Simulations are educational exercises, not real employment experience or a job guarantee.</div></section></div></>}
 
-function Workbench() {const [tool,setTool]=useState("DCF Snapshot");const [revenue,setRevenue]=useState("1000");const [growth,setGrowth]=useState("8");const [margin,setMargin]=useState("18");const [wacc,setWacc]=useState("12");const [terminal,setTerminal]=useState("4");const fcf=Number(revenue)*Number(margin)/100*(1+Number(growth)/100);const tv=Number(wacc)>Number(terminal)?fcf*(1+Number(terminal)/100)/(Number(wacc)/100-Number(terminal)/100):null;return <><PageTitle eyebrow="PRACTICAL FINANCE WORKSPACE" title="From concepts to outputs." description="A starter workbench for guided analysis. Add evidence, challenge assumptions and document your work."/><div className="workbench-layout"><aside className="tool-list">{["DCF Snapshot","Company Research","Investment Memo","Three-Statement Model"].map(t=><button key={t} className={tool===t?"selected":""} onClick={()=>setTool(t)}><BarChart3 size={16}/>{t}<ChevronRight size={14}/></button>)}</aside><section className="panel workbench-main"><div className="eyebrow">VALUATION TOOL · EDUCATIONAL ESTIMATE</div><h2>{tool}</h2>{tool==="DCF Snapshot"?<><p className="muted">A deliberately simplified one-period illustration. This is not a full DCF: it excludes multi-year forecasts, net debt, dilution, taxes, reinvestment schedules and scenario weighting.</p><div className="input-grid">{[[ "Revenue (₹ cr)",revenue,setRevenue],["FCF margin (%)",margin,setMargin],["Growth (%)",growth,setGrowth],["Discount rate / WACC (%)",wacc,setWacc],["Terminal growth (%)",terminal,setTerminal]].map(([label,value,setter]:any)=><label key={label}>{label}<input type="number" value={value} onChange={e=>setter(e.target.value)}/></label>)}</div><div className="valuation-output"><div><small>Illustrative next-period free cash flow</small><b>₹{Number.isFinite(fcf)?fcf.toFixed(2):"—"} cr</b></div><div><small>Illustrative terminal value</small><b>{tv===null?"WACC must exceed terminal growth":`₹${tv.toFixed(2)} cr`}</b></div></div><p className="micro-note">Formula used: FCF = revenue × FCF margin × (1 + growth). Terminal value = next-period FCF × (1 + g) / (WACC − g).</p></>:<div className="coming-panel"><Sparkles size={22}/><h3>{tool} workspace</h3><p>This module is on the build roadmap. The intended workflow is to collect source evidence, guide your analysis, validate calculations and create a work sample you can export.</p><span className="tag">FOUNDATION PLACEHOLDER</span></div>}</section></div></>}
+function Workbench() {
+  const [tool,setTool]=useState("DCF Snapshot");
+  const [startingFcf,setStartingFcf]=useState("100");
+  const [growth,setGrowth]=useState("8");
+  const [wacc,setWacc]=useState("12");
+  const [terminal,setTerminal]=useState("4");
+  const [years,setYears]=useState("5");
+  const [netDebt,setNetDebt]=useState("0");
+  let dcf:ReturnType<typeof calculateDcf>|null=null;
+  let dcfError="";
+  try { dcf=calculateDcf({startingFcf:Number(startingFcf),growthRate:Number(growth)/100,wacc:Number(wacc)/100,terminalGrowth:Number(terminal)/100,forecastYears:Number(years),netDebt:Number(netDebt)}); }
+  catch(error) { dcfError=error instanceof Error?error.message:"Check the DCF assumptions."; }
+  return <><PageTitle eyebrow="PRACTICAL FINANCE WORKSPACE" title="From concepts to outputs." description="Build a transparent valuation, inspect the assumptions and understand what drives the result."/>
+    <div className="workbench-layout">
+      <aside className="tool-list">{["DCF Snapshot","Company Research","Investment Memo","Three-Statement Model"].map(t=><button key={t} className={tool===t?"selected":""} onClick={()=>setTool(t)}><BarChart3 size={16}/>{t}<ChevronRight size={14}/></button>)}</aside>
+      <section className="panel workbench-main"><div className="eyebrow">VALUATION TOOL · EDUCATIONAL MODEL</div><h2>{tool}</h2>
+        {tool==="DCF Snapshot"?<>
+          <p className="muted">Five-year unlevered free-cash-flow DCF with a constant growth assumption. This is a teaching model, not investment research. Taxes, explicit working-capital schedules, share count, dilution and scenario weighting are not modelled.</p>
+          <div className="input-grid">
+            <label>Next-year starting FCF (₹ cr)<input type="number" min="0" step="any" value={startingFcf} onChange={e=>setStartingFcf(e.target.value)}/></label>
+            <label>Annual FCF growth (%)<input type="number" min="-99" max="100" step="0.1" value={growth} onChange={e=>setGrowth(e.target.value)}/></label>
+            <label>WACC / discount rate (%)<input type="number" min="-99" max="100" step="0.1" value={wacc} onChange={e=>setWacc(e.target.value)}/></label>
+            <label>Terminal growth (%)<input type="number" min="-99" max="100" step="0.1" value={terminal} onChange={e=>setTerminal(e.target.value)}/></label>
+            <label>Forecast years (1–10)<input type="number" min="1" max="10" step="1" value={years} onChange={e=>setYears(e.target.value)}/></label>
+            <label>Net debt (₹ cr)<input type="number" step="any" value={netDebt} onChange={e=>setNetDebt(e.target.value)}/></label>
+          </div>
+          {dcfError?<div className="validation-error" role="alert">{dcfError}</div>:dcf&&<>
+            <div className="valuation-output">
+              <div><small>Enterprise value</small><b>{money(dcf.enterpriseValue*10000000)}</b><em>₹ cr {dcf.enterpriseValue.toFixed(2)}</em></div>
+              <div><small>Equity value</small><b>₹{dcf.equityValue.toFixed(2)} cr</b><em>EV less net debt</em></div>
+              <div><small>PV of forecast period</small><b>₹{dcf.pvExplicitPeriod.toFixed(2)} cr</b><em>{dcf.presentValues.length} forecast years</em></div>
+              <div><small>PV of terminal value</small><b>₹{dcf.presentValueTerminal.toFixed(2)} cr</b><em>Gordon growth method</em></div>
+            </div>
+            <div className="forecast-table"><div><b>Year</b><b>Projected FCF</b><b>Present value</b></div>{dcf.projectedCashFlows.map((fcf,i)=><div key={i}><span>Year {i+1}</span><span>₹{fcf.toFixed(2)} cr</span><span>₹{dcf.presentValues[i].toFixed(2)} cr</span></div>)}</div>
+          </>}
+          <p className="micro-note">Enterprise value = PV of explicit forecast cash flows + PV of terminal value. Equity value = enterprise value − net debt. Keep WACC above terminal growth; small assumption changes can materially change terminal value.</p>
+        </>:<div className="coming-panel"><Sparkles size={22}/><h3>{tool} workspace</h3><p>This module is on the roadmap. It will support source-linked inputs, structured analysis, calculation validation and exportable work samples.</p><span className="tag">PLANNED MODULE</span></div>}
+      </section>
+    </div>
+  </>;
+}
 
 function Progress({completed,total,progress,trades}:{completed:string[];total:number;progress:number;trades:number}) {const skills=[["Financial foundations",Math.min(100,completed.length*16)],["Accounting",completed.some(x=>x.startsWith("acc"))?45:8],["Markets",completed.some(x=>x.startsWith("mkt"))?35:5],["Valuation",completed.some(x=>x.startsWith("val"))?28:0],["Modelling",completed.some(x=>x.startsWith("mod"))?22:0],["Professional communication",12]];return <><PageTitle eyebrow="YOUR DEVELOPMENT RECORD" title="Progress you can inspect." description="Track demonstrated activity—not just time spent inside a platform."/><div className="stats-grid"><Stat label="Curriculum progress" value={`${progress}%`} sub={`${completed.length} / ${total} lessons`} icon={GraduationCap} trend="Lesson completion"/><Stat label="Simulated orders" value={String(trades)} sub="Paper trading activity" icon={Activity} trend="Decision practice"/><Stat label="Skill domains" value="6" sub="Tracked capability areas" icon={Target} trend="Starter framework"/></div><section className="panel skill-panel"><div className="panel-head"><div><div className="eyebrow">SKILL MAP</div><h3>Capability snapshot</h3></div><span className="tag">PROVISIONAL INDICATORS</span></div>{skills.map(([name,score])=><div className="skill-row" key={name as string}><span>{name}</span><div className="progress-track"><span style={{width:`${score}%`}}/></div><b>{score}%</b></div>)}<p className="micro-note">These indicators are simple product-demo placeholders and are not validated proficiency scores. Real skill scoring needs assessments and rubric-based evaluation.</p></section><section className="panel portfolio-panel"><div className="eyebrow">PRACTICAL PORTFOLIO</div><h3>Your work should become evidence.</h3><p>Completed models, company research, news interpretations and career assignments will be collected here with methodology, assumptions, results and limitations.</p><div className="empty-state">No portfolio projects yet. Start with a News Lab analysis or a DCF exercise.</div></section></>}
 
