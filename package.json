@@ -11,7 +11,9 @@
     "build": "npm run typecheck && vite build",
     "check": "npm run typecheck && npm test && vite build",
     "preview": "vite preview",
-    "audit": "npm audit --audit-level=high"
+    "audit": "npm audit --audit-level=high",
+    "test:e2e": "playwright test",
+    "test:all": "npm run check && npm run test:e2e"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",
@@ -28,7 +30,9 @@
     "tailwindcss": "^3.4.17",
     "typescript": "~5.9.3",
     "vite": "^8.3.8",
-    "vitest": "^5.1.1"
+    "vitest": "^5.1.1",
+    "@playwright/test": "^1.65.1",
+    "@axe-core/playwright": "^4.11.0"
   },
   "engines": {
     "node": ">=22.12.0",
