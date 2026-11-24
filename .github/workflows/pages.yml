@@ -30,8 +30,10 @@ jobs:
           GITHUB_PAGES: "true"
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
-      - name: Verify browser journeys and accessibility
+      - name: Verify production preview at GitHub Pages base path
         run: npm run test:e2e
+        env:
+          GITHUB_PAGES: "true"
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v6
       - name: Upload compiled Vite output
