@@ -33,6 +33,8 @@ jobs:
     name: Browser journeys and accessibility checks
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    env:
+      GITHUB_PAGES: "true"
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
