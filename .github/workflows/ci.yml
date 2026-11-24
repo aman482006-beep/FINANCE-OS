@@ -22,6 +22,7 @@ jobs:
         uses: actions/setup-node@v7
         with:
           node-version: 24
+          package-manager-cache: false
       - name: Install dependencies
         run: npm install --no-audit --no-fund
       - name: Run unit tests and production build
@@ -37,6 +38,7 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: 24
+          package-manager-cache: false
       - run: npm install --no-audit --no-fund
       - name: Install Playwright browser
         run: npx playwright install --with-deps chromium
