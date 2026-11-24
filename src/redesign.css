@@ -219,16 +219,16 @@ button { cursor: pointer; }
 .response-panel > p { color: #5e7166; font-size: 13px; line-height: 1.7; }
 .response-panel textarea { padding: 14px; font-size: 13px; line-height: 1.65; resize: vertical; }
 .response-actions { gap: 12px; margin-top: 13px; }
-.response-actions > span { color: #7c8b82; font: 10px var(--mono); }
+.response-actions > span { color: #53665a; font: 10px var(--mono); }
 .news-sidebar h3 { margin-bottom: 15px; }
 .case-item { padding: 14px 0; border-bottom-color: #e9efeb; color: #34483c; }
 .case-item > span { color: #47825d; font: 9px var(--mono); }
 .case-item > b { margin: 7px 0; color: #263b30; font-size: 12px; line-height: 1.5; }
-.case-item small { color: #839188; font-size: 10px; }
+.case-item small { color: #53665a; font-size: 10px; }
 .case-item.selected b { color: #16784d; }
 .tip-card { margin-top: 18px; padding: 14px; border: 1px solid #dcebe1; border-radius: 10px; background: #f1f8f3; color: #227a51; }
 .tip-card b { margin: 8px 0 6px; color: #2c5c40; font-size: 12px; }
-.tip-card p { color: #617b69; font-size: 11px; line-height: 1.65; }
+.tip-card p { color: #49634f; font-size: 11px; line-height: 1.65; }
 .career-layout, .workbench-layout { grid-template-columns: 290px minmax(0, 1fr); gap: 16px; }
 .track-list, .tool-list { gap: 8px; }
 .track-list button, .tool-list button {
