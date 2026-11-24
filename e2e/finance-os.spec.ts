@@ -40,13 +40,13 @@ test("News Lab review returns transparent rubric feedback", async ({ page }) => 
   await page.getByRole("textbox", { name: "Your written analysis" }).fill(analysis);
   await page.getByRole("button", { name: /Review my analysis/ }).click();
   await expect(page.getByText("STRUCTURED REVIEW")).toBeVisible();
-  await expect(page.getByText("Causal reasoning")).toBeVisible();
+  await expect(page.getByText("Causal reasoning", { exact: true })).toBeVisible();
   await expect(page.getByText("What is already present")).toBeVisible();
 });
 
 test("DCF workbench calculates a multi-year forecast and rejects bad assumptions", async ({ page }) => {
   await page.getByRole("button", { name: "Workbench", exact: true }).click();
-  await expect(page.getByText("Enterprise value")).toBeVisible();
+  await expect(page.getByText("Enterprise value", { exact: true })).toBeVisible();
   await page.getByLabel("Terminal growth (%)").fill("15");
   await expect(page.getByRole("alert")).toContainText("Terminal growth must be");
   await page.getByLabel("Terminal growth (%)").fill("4");
