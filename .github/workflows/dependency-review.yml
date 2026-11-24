@@ -1,16 +1,22 @@
-name: Dependency review
+name: Dependency audit
 on:
   pull_request:
     branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
 permissions:
   contents: read
-  pull-requests: write
 jobs:
-  dependency-review:
+  dependency-audit:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/dependency-review-action@v4
+      - uses: actions/setup-node@v4
         with:
-          fail-on-severity: high
-          deny-licenses: GPL-3.0, AGPL-3.0
+          node-version: 24
+      - name: Install dependency tree
+        run: npm install --ignore-scripts --no-audit --no-fund
+      - name: Audit all direct and transitive npm dependencies
+        run: npm audit --audit-level=high
