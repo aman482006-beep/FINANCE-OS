@@ -45,7 +45,7 @@ jobs:
       - name: Build production preview
         run: npm run build
       - name: Install Playwright browser
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install chromium
       - name: Run browser tests and axe accessibility scan
         run: npm run test:e2e
       - name: Upload Playwright report on failure
