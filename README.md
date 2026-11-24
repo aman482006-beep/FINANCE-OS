@@ -2,26 +2,32 @@
 
 **Learn Finance. Practise Finance. Think Like a Finance Professional.**
 
-Finance OS is an AI-powered financial education and career-development platform. It connects structured learning, practical finance assignments, market simulations, financial news analysis and career preparation in one environment.
+Finance OS is an AI-powered financial education and career-development platform connecting structured learning, practical assignments, market simulations, financial news analysis and career preparation.
 
-## Product direction
+## Current starter application
 
-The full product blueprint describes 13 connected environments: personalised learning, AI mentor, knowledge assessment, paper trading, news intelligence, company research, modelling workspace, career tracks, AI Finance Council, daily challenges, work simulation, skill tracking and a practical project portfolio.
+- Responsive finance-terminal dashboard and navigation.
+- Starter curriculum across eight learning domains.
+- Lesson details and browser-persisted completion.
+- Virtual-cash paper trading with holdings, validation and order history.
+- Illustrative watchlist values, clearly labelled as demo prices.
+- Hypothetical news interpretation exercises.
+- Career tracks and suggested capstone work.
+- Simplified DCF teaching calculator with limitations stated.
+- Progress snapshot and transparent AI mentor integration boundary.
 
-## Build strategy
+## Run locally
 
-The product is being developed incrementally. The first milestone is a testable foundation with:
+Requires Node.js 20+ and npm.
 
-- A responsive dashboard and navigation
-- Structured curriculum and lesson experiences
-- Knowledge checks and progress tracking
-- A local paper-trading simulator (not connected to a broker)
-- News-analysis exercises
-- Company research and career-workbench starter flows
-- An AI mentor integration boundary, with clear setup instructions
+```bash
+npm install
+npm run dev
+npm run build
+```
 
-Live financial data, production authentication, persistent multi-user storage and external AI APIs require credentials and provider configuration. The application must label demo and simulated data clearly.
+## Current limitations
 
-## Status
+This is a client-side MVP foundation. Production authentication, backend persistence, live stock/news feeds, external AI provider, multi-agent evaluation, model file imports/exports and real-time execution are not connected. Market prices and news cases are demo fixtures. Paper trading is local-only and never places real orders.
 
-Repository initialized. See `docs/PRODUCT_ROADMAP.md` and `docs/ARCHITECTURE.md` for implementation scope and technical decisions.
+See [Product roadmap](docs/PRODUCT_ROADMAP.md) and [Architecture](docs/ARCHITECTURE.md).
