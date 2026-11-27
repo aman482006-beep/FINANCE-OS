@@ -175,7 +175,7 @@ export default function App() {
       <div className="content">
         {notice && <div className="notice"><ShieldCheck size={16}/>{notice}<button aria-label="Dismiss notification" onClick={() => setNotice("")}><X size={15}/></button></div>}
         {page === "Overview" && <Overview progress={progress} completed={completed.length} total={total} go={go} cash={cash} invested={invested} trades={trades.length} />}
-        {page === "Learn" && <Learn completed={completed} markComplete={markComplete} setSelectedLesson={setSelectedLesson} search={search} setSearch={setSearch}/>}
+        {page === "Learn" && <LearningRoom completed={completed} markComplete={markComplete} setSelectedLesson={setSelectedLesson} points={dividendPoints} completedQuizzes={completedQuizzes} onQuizPassed={onQuizPassed} onOpenRewards={() => go("Rewards")}/>}\n        {page === "Resources" && <ResourcesRoom/>}
         {page === "Markets" && <Markets cash={cash} invested={invested} holdings={holdings} trades={trades} tradeSymbol={tradeSymbol} setTradeSymbol={setTradeSymbol} tradeQty={tradeQty} setTradeQty={setTradeQty} tradeSide={tradeSide} setTradeSide={setTradeSide} executeTrade={executeTrade}/>}
         {page === "News Lab" && <NewsLab active={activeNews} setActive={id => {setActiveNews(id); setNewsAnswer(""); setNewsSubmitted(false); setNewsReview(null);}} answer={newsAnswer} setAnswer={setNewsAnswer} submitted={newsSubmitted} review={newsReview} submit={submitNews}/>}
         {page === "Career" && <CareerRoom/>}
