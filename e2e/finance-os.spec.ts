@@ -9,19 +9,56 @@ test.beforeEach(async ({ page }) => {
 
 test("dashboard and primary navigation render", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Good morning, Aman." })).toBeVisible();
-  for (const label of ["Learn", "Markets", "News Lab", "Career", "Workbench", "My Progress", "AI Mentor"]) {
+  for (const label of ["Learn", "Resources", "Markets", "News Lab", "Career", "Workbench", "Rewards", "My Progress", "AI Mentor"]) {
     await expect(page.getByRole("button", { name: label, exact: true })).toBeVisible();
   }
 });
 
-test("learning completion persists across reload", async ({ page }) => {
+test("folder learning completion earns Dividend Points and persists", async ({ page }) => {
   await page.getByRole("button", { name: "Learn", exact: true }).click();
-  await page.getByRole("button", { name: /Simple vs compound interest Calculate how money changes/ }).click();
+  await page.getByRole("button", { name: /Financial Foundations/ }).click();
+  await expect(page.getByRole("heading", { name: "Financial Foundations" })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Investor Education \(Basic\)/ })).toBeVisible();
+  await page.getByRole("button", { name: /Simple vs compound interest/ }).click();
   await expect(page.getByRole("heading", { name: "Simple vs compound interest" })).toBeVisible();
-  await page.getByRole("button", { name: /Mark lesson complete/ }).click();
+  await page.getByRole("button", { name: /Mark lesson complete/ }).last().click();
+  await expect(page.locator(".topbar-dp")).toContainText("5 DP");
   await page.reload();
   await page.getByRole("button", { name: "Learn", exact: true }).click();
-  await expect(page.getByText("2/3 DONE")).toBeVisible();
+  await expect(page.getByText("2/3 lessons")).toBeVisible();
+  await expect(page.locator(".topbar-dp")).toContainText("5 DP");
+});
+
+test("a perfect folder quiz awards points and unlocks a useful reward", async ({ page }) => {
+  await page.getByRole("button", { name: "Learn", exact: true }).click();
+  await page.getByRole("button", { name: /Financial Foundations/ }).click();
+  await page.getByRole("button", { name: "Mark lesson complete" }).first().click();
+  await page.getByRole("radio", { name: "Whether expected risk-adjusted benefits justify the cash outflow" }).check();
+  await page.getByRole("radio", { name: "Returns are earned on the original principal and previously earned returns" }).check();
+  await page.getByRole("button", { name: "Check answers" }).click();
+  await expect(page.getByText("Folder assessment passed")).toBeVisible();
+  await expect(page.locator(".topbar-dp")).toContainText("20 DP");
+  await page.getByRole("button", { name: "Rewards", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Analyst Starter Pack" })).toBeVisible();
+  await page.getByRole("button", { name: "Unlock with points" }).first().click();
+  await page.getByRole("button", { name: "Open unlocked content" }).click();
+  await expect(page.getByText(/Business: What does the company sell/)).toBeVisible();
+});
+
+test("curated resources and career folders open the right content", async ({ page }) => {
+  await page.getByRole("button", { name: "Resources", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Don't rebuild what already exists." })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Principles of Finance 2e/ })).toHaveAttribute("href", "https://openstax.org/books/principles-finance-2e/pages/preface");
+  await page.getByRole("button", { name: "Career", exact: true }).click();
+  await page.getByRole("button", { name: /Investment Banking/ }).click();
+  await expect(page.getByRole("heading", { name: "Investment Banking" })).toBeVisible();
+  await expect(page.locator(".gx-skill-chip").filter({ hasText: "DCF" })).toBeVisible();
+});
+
+test("tampered negative Dividend Points are rejected on load", async ({ page }) => {
+  await page.evaluate(() => localStorage.setItem("fos-dividend-points", "-500"));
+  await page.reload();
+  await expect(page.locator(".topbar-dp")).toContainText("0 DP");
 });
 
 test("paper trading prevents overselling", async ({ page }) => {
@@ -54,7 +91,7 @@ test("DCF workbench calculates a multi-year forecast and rejects bad assumptions
 });
 
 test("primary screens pass axe WCAG 2.1 A/AA checks", async ({ page }) => {
-  const screens = ["Overview", "Learn", "Markets", "News Lab", "Career", "Workbench", "My Progress", "AI Mentor"];
+  const screens = ["Overview", "Learn", "Resources", "Markets", "News Lab", "Career", "Workbench", "Rewards", "My Progress", "AI Mentor"];
   for (const screen of screens) {
     if (screen !== "Overview") await page.getByRole("button", { name: screen, exact: true }).click();
     const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
@@ -67,5 +104,5 @@ test("mobile navigation is operable", async ({ page }) => {
   await page.getByRole("button", { name: "Open navigation" }).click();
   await expect(page.getByRole("button", { name: "Learn", exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Learn", exact: true }).click();
-  await expect(page.getByRole("heading", { name: "Learn by understanding." })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Learn finance. Build judgement." })).toBeVisible();
 });

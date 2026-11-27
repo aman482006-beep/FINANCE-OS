@@ -1,21 +1,24 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { Activity, ArrowDownRight, ArrowRight, ArrowUpRight, BarChart3, BookOpen, BriefcaseBusiness, BrainCircuit, Check, ChevronDown, ChevronRight, CircleHelp, Clock3, Coins, Compass, GraduationCap, LayoutDashboard, LineChart, Menu, Newspaper, Plus, Search, Send, ShieldCheck, Sparkles, Target, TrendingUp, Wallet, X, Zap } from "lucide-react";
+import { Activity, ArrowDownRight, ArrowRight, ArrowUpRight, BarChart3, BookMarked, BookOpen, BriefcaseBusiness, BrainCircuit, Check, ChevronDown, ChevronRight, CircleHelp, Clock3, Coins, Compass, Gift, GraduationCap, LayoutDashboard, LineChart, Menu, Newspaper, Plus, Search, Send, ShieldCheck, Sparkles, Target, TrendingUp, Wallet, X, Zap } from "lucide-react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { curriculum, newsCases, tracks, watchlist } from "./data";
 import { lessonContent } from "./data/lessonContent";
 import { deriveHoldings, executeSimulatedOrder } from "./lib/simulator";
 import { calculateDcf } from "./lib/finance";
 import { reviewAnalysis } from "./lib/review";
+import { CareerRoom, LearningRoom, ResourcesRoom, RewardsRoom } from "./GrowthXRooms";
 
-type Page = "Overview" | "Learn" | "Markets" | "News Lab" | "Career" | "Workbench" | "My Progress" | "AI Mentor";
+type Page = "Overview" | "Learn" | "Resources" | "Markets" | "News Lab" | "Career" | "Workbench" | "Rewards" | "My Progress" | "AI Mentor";
 type Trade = { symbol: string; side: "BUY" | "SELL"; quantity: number; price: number; date: string };
 const nav: { label: Page; icon: typeof LayoutDashboard; group: string }[] = [
   { label: "Overview", icon: LayoutDashboard, group: "Workspace" },
   { label: "Learn", icon: BookOpen, group: "Workspace" },
+  { label: "Resources", icon: BookMarked, group: "Workspace" },
   { label: "Markets", icon: LineChart, group: "Workspace" },
   { label: "News Lab", icon: Newspaper, group: "Workspace" },
   { label: "Career", icon: BriefcaseBusiness, group: "Develop" },
   { label: "Workbench", icon: Coins, group: "Develop" },
+  { label: "Rewards", icon: Gift, group: "Develop" },
   { label: "My Progress", icon: Target, group: "Develop" },
   { label: "AI Mentor", icon: BrainCircuit, group: "Develop" }
 ];
@@ -29,11 +32,26 @@ const money = (v: number) => new Intl.NumberFormat("en-IN", { style: "currency",
 const readStored = <T,>(key: string, fallback: T): T => {
   try { const value = localStorage.getItem(key); return value ? JSON.parse(value) as T : fallback; } catch { return fallback; }
 };
+const readStoredStringArray = (key: string, fallback: string[]): string[] => {
+  const value = readStored<unknown>(key, fallback);
+  if (!Array.isArray(value) || value.some(item => typeof item !== "string")) return fallback;
+  return [...new Set(value)];
+};
+const readStoredPoints = (): number => {
+  const value = readStored<unknown>("fos-dividend-points", 0);
+  return typeof value === "number" && Number.isSafeInteger(value) && value >= 0 ? value : 0;
+};
+const validLessonIds = new Set(curriculum.flatMap(module => module.lessons.map(lesson => lesson.id)));
+const validModuleIds = new Set(curriculum.map(module => module.id));
 
 export default function App() {
   const [page, setPage] = useState<Page>("Overview");
   const [mobileNav, setMobileNav] = useState(false);
-  const [completed, setCompleted] = useState<string[]>(() => readStored("fos-completed", ["fin-101"]));
+  const [completed, setCompleted] = useState<string[]>(() => readStoredStringArray("fos-completed", ["fin-101"]).filter(id => validLessonIds.has(id)));
+  const [awardedLessons, setAwardedLessons] = useState<string[]>(() => readStoredStringArray("fos-awarded-lessons", []).filter(id => validLessonIds.has(id)));
+  const [completedQuizzes, setCompletedQuizzes] = useState<string[]>(() => readStoredStringArray("fos-completed-quizzes", []).filter(id => validModuleIds.has(id)));
+  const [dividendPoints, setDividendPoints] = useState<number>(() => readStoredPoints());
+  const [unlockedRewards, setUnlockedRewards] = useState<string[]>(() => readStoredStringArray("fos-unlocked-rewards", []));
   const [trades, setTrades] = useState<Trade[]>(() => readStored("fos-trades", []));
   const [cash, setCash] = useState(() => readStored("fos-cash", 1000000));
   const [mentorInput, setMentorInput] = useState("");
@@ -78,8 +96,37 @@ export default function App() {
   const save = (key: string, value: unknown) => { try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* storage may be unavailable */ } };
   const go = (next: Page) => { setPage(next); setMobileNav(false); setNotice(""); };
   const markComplete = (id: string) => {
-    const next = completed.includes(id) ? completed.filter(x => x !== id) : [...completed, id];
+    if (!validLessonIds.has(id)) { setNotice("This lesson cannot be recorded because its ID is not in the curriculum."); return; }
+    const isComplete = completed.includes(id);
+    const next = isComplete ? completed.filter(x => x !== id) : [...completed, id];
     setCompleted(next); save("fos-completed", next);
+    if (!isComplete && !awardedLessons.includes(id)) {
+      const nextAwards = [...awardedLessons, id];
+      const nextPoints = dividendPoints + 5;
+      setAwardedLessons(nextAwards); save("fos-awarded-lessons", nextAwards);
+      setDividendPoints(nextPoints); save("fos-dividend-points", nextPoints);
+      setNotice("Lesson completed · 5 Dividend Points earned. Keep building your learning streak.");
+    }
+  };
+  const onQuizPassed = (moduleId: string) => {
+    if (!validModuleIds.has(moduleId) || completedQuizzes.includes(moduleId)) return;
+    const nextQuizzes = [...completedQuizzes, moduleId];
+    const nextPoints = dividendPoints + 15;
+    setCompletedQuizzes(nextQuizzes); save("fos-completed-quizzes", nextQuizzes);
+    setDividendPoints(nextPoints); save("fos-dividend-points", nextPoints);
+    setNotice("Knowledge check passed · 15 Dividend Points earned.");
+  };
+  const redeemReward = (rewardId: string, cost: number) => {
+    if (unlockedRewards.includes(rewardId)) return;
+    if (!Number.isSafeInteger(cost) || cost < 0 || dividendPoints < cost) {
+      setNotice("Not enough Dividend Points to unlock this reward.");
+      return;
+    }
+    const nextUnlocked = [...unlockedRewards, rewardId];
+    const nextPoints = dividendPoints - cost;
+    setUnlockedRewards(nextUnlocked); save("fos-unlocked-rewards", nextUnlocked);
+    setDividendPoints(nextPoints); save("fos-dividend-points", nextPoints);
+    setNotice("Reward unlocked in your Finance OS library.");
   };
   const executeTrade = () => {
     const security = watchlist.find(s => s.symbol === tradeSymbol);
@@ -136,15 +183,16 @@ export default function App() {
     </aside>
     {mobileNav && <div className="scrim" onClick={() => setMobileNav(false)}/>}
     <main id="main-content" tabIndex={-1} className="main-area">
-      <header className="topbar"><div className="crumb"><button className="icon-btn menu-btn" aria-label="Open navigation" aria-controls="primary-sidebar" aria-expanded={mobileNav} onClick={() => setMobileNav(true)}><Menu size={19}/></button><span>Finance OS</span><ChevronRight size={14}/><b>{page}</b></div><div className="top-actions"><div className="live-pill"><span/> Demo environment</div><button className="top-avatar" aria-label="AM — Open progress profile" onClick={() => go("My Progress")}>AM</button></div></header>
+      <header className="topbar"><div className="crumb"><button className="icon-btn menu-btn" aria-label="Open navigation" aria-controls="primary-sidebar" aria-expanded={mobileNav} onClick={() => setMobileNav(true)}><Menu size={19}/></button><span>Finance OS</span><ChevronRight size={14}/><b>{page}</b></div><div className="top-actions"><div className="live-pill"><span/> Demo environment</div><button className="topbar-dp" onClick={() => go("Rewards")}><Zap size={14}/><b>{dividendPoints.toLocaleString("en-IN")} DP</b></button><button className="top-avatar" aria-label="AM — Open progress profile" onClick={() => go("My Progress")}>AM</button></div></header>
       <div className="content">
         {notice && <div className="notice"><ShieldCheck size={16}/>{notice}<button aria-label="Dismiss notification" onClick={() => setNotice("")}><X size={15}/></button></div>}
-        {page === "Overview" && <Overview progress={progress} completed={completed.length} total={total} go={go} cash={cash} invested={invested} trades={trades.length} />}
-        {page === "Learn" && <Learn completed={completed} markComplete={markComplete} setSelectedLesson={setSelectedLesson} search={search} setSearch={setSearch}/>}
+        {page === "Overview" && <Overview progress={progress} completed={completed.length} total={total} go={go} cash={cash} invested={invested} trades={trades.length} points={dividendPoints} />}
+        {page === "Learn" && <LearningRoom completed={completed} markComplete={markComplete} setSelectedLesson={setSelectedLesson} points={dividendPoints} completedQuizzes={completedQuizzes} onQuizPassed={onQuizPassed} onOpenRewards={() => go("Rewards")}/>}\n        {page === "Resources" && <ResourcesRoom/>}
         {page === "Markets" && <Markets cash={cash} invested={invested} holdings={holdings} trades={trades} tradeSymbol={tradeSymbol} setTradeSymbol={setTradeSymbol} tradeQty={tradeQty} setTradeQty={setTradeQty} tradeSide={tradeSide} setTradeSide={setTradeSide} executeTrade={executeTrade}/>}
         {page === "News Lab" && <NewsLab active={activeNews} setActive={id => {setActiveNews(id); setNewsAnswer(""); setNewsSubmitted(false); setNewsReview(null);}} answer={newsAnswer} setAnswer={setNewsAnswer} submitted={newsSubmitted} review={newsReview} submit={submitNews}/>}
-        {page === "Career" && <Career />}
+        {page === "Career" && <CareerRoom/>}
         {page === "Workbench" && <Workbench />}
+        {page === "Rewards" && <RewardsRoom points={dividendPoints} unlockedIds={unlockedRewards} onRedeem={redeemReward}/>}
         {page === "My Progress" && <Progress completed={completed} total={total} progress={progress} trades={trades.length}/>}
         {page === "AI Mentor" && <Mentor messages={mentorMessages} value={mentorInput} setValue={setMentorInput} submit={submitMentor}/>}
       </div>
@@ -157,14 +205,14 @@ export default function App() {
 function PageTitle({eyebrow, title, description, action}: {eyebrow: string; title: string; description: string; action?: ReactNode}) {
   return <div className="page-title"><div><div className="eyebrow">{eyebrow}</div><h1>{title}</h1><p>{description}</p></div>{action}</div>;
 }
-function Overview({progress, completed, total, go, cash, invested, trades}: {progress:number; completed:number; total:number; go:(p:Page)=>void; cash:number; invested:number; trades:number}) {
+function Overview({progress, completed, total, go, cash, invested, trades, points}: {progress:number; completed:number; total:number; go:(p:Page)=>void; cash:number; invested:number; trades:number; points:number}) {
   return <>
     <PageTitle eyebrow={`${new Date().toLocaleDateString("en-IN", { weekday: "long", day: "2-digit", month: "long", year: "numeric" }).toUpperCase()} · YOUR LEARNING DESK`} title="Good morning, Aman." description="Build practical finance skills, one deliberate decision at a time." action={<button className="outline-btn" onClick={() => go("Learn")}><Compass size={15}/> Open learning path</button>}/>
     <div className="hero-panel"><div className="hero-copy"><div className="hero-kicker"><span className="spark-dot"/> YOUR FINANCE JOURNEY</div><h2>Don't just learn finance.<br/><em>Learn to think in finance.</em></h2><p>Your learning desk connects concepts, market simulations and practical work into one continuous journey.</p><button className="light-btn" onClick={() => go("Learn")}>Continue learning <ArrowRight size={15}/></button></div><div className="hero-orbit"><div className="orbit orbit-one"/><div className="orbit orbit-two"/><div className="orbit-core"><Activity size={30}/></div><span className="orbit-node node-a"><BookOpen size={15}/></span><span className="orbit-node node-b"><LineChart size={15}/></span><span className="orbit-node node-c"><BrainCircuit size={15}/></span></div><div className="hero-index">01 <span>/ 08</span></div></div>
-    <div className="stats-grid"><Stat label="Learning progress" value={`${progress}%`} sub={`${completed} of ${total} lessons complete`} icon={GraduationCap} trend="Your journey so far"/><Stat label="Virtual cash" value={money(cash)} sub="Paper trading balance" icon={Wallet} trend="Simulated account"/><Stat label="Portfolio value" value={money(cash+invested)} sub={`${trades} simulated orders`} icon={TrendingUp} trend="Cash + holdings"/><Stat label="Learning streak" value="1 day" sub="Show up and compound knowledge" icon={Zap} trend="Consistency beats intensity"/> </div>
+    <div className="stats-grid"><Stat label="Learning progress" value={`${progress}%`} sub={`${completed} of ${total} lessons complete`} icon={GraduationCap} trend="Your journey so far"/><Stat label="Virtual cash" value={money(cash)} sub="Paper trading balance" icon={Wallet} trend="Simulated account"/><Stat label="Portfolio value" value={money(cash+invested)} sub={`${trades} simulated orders`} icon={TrendingUp} trend="Cash + holdings"/><Stat label="Dividend Points" value={`${points} DP`} sub="Earned through lessons and quizzes" icon={Zap} trend="Open Rewards to unlock practice packs"/> </div>
     <div className="dashboard-grid"><section className="panel learning-panel"><div className="panel-head"><div><div className="eyebrow">PICK UP WHERE YOU LEFT OFF</div><h3>Your learning path</h3></div><button className="text-btn" onClick={() => go("Learn")}>View curriculum <ArrowRight size={14}/></button></div><div className="learning-row"><div className="lesson-number">01</div><div className="lesson-info"><b>Financial Foundations</b><p>Start with the principles behind money and markets.</p><div className="progress-track"><span style={{width:`${Math.min(progress,100)}%`}}/></div><small>{completed} lessons completed across the curriculum</small></div><button className="round-arrow" aria-label="Open learning path" onClick={() => go("Learn")}><ArrowRight size={16}/></button></div><div className="module-links">{["Markets & Instruments","Accounting & Statements","Corporate Finance & Valuation"].map((s,i)=><button key={s} onClick={() => go("Learn")}><span className="module-index">0{i+2}</span>{s}<ChevronRight size={15}/></button>)}</div></section>
       <section className="panel chart-panel"><div className="panel-head"><div><div className="eyebrow">SIMULATED ACCOUNT</div><h3>Portfolio snapshot</h3></div><span className="tag">DEMO DATA</span></div><div className="chart-value">{money(cash+invested)} <span className="positive"><ArrowUpRight size={13}/>Virtual account</span></div><div className="chart-wrap" role="img" aria-label="Illustrative portfolio index chart. Values are simulated and are not actual market returns."><ResponsiveContainer width="100%" height="100%"><AreaChart data={chartData}><defs><linearGradient id="chartFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#72c6ab" stopOpacity={0.22}/><stop offset="95%" stopColor="#72c6ab" stopOpacity={0}/></linearGradient></defs><CartesianGrid stroke="#e5ece8" vertical={false}/><XAxis dataKey="day" tick={{fill:"#7b8b82",fontSize:11}} axisLine={false} tickLine={false}/><YAxis hide domain={["dataMin - 0.2","dataMax + 0.2"]}/><Tooltip contentStyle={{background:"#ffffff",border:"1px solid #dce7e0",borderRadius:10,color:"#24382d",boxShadow:"0 8px 24px rgba(24,58,39,.12)"}} formatter={(v:any)=>[`${v}L`,"Portfolio index"]}/><Area type="monotone" dataKey="value" stroke="#72c6ab" strokeWidth={2} fill="url(#chartFill)"/></AreaChart></ResponsiveContainer></div><div className="chart-foot"><span>Illustrative index · not actual market performance</span><button className="text-btn" onClick={() => go("Markets")}>Open markets <ArrowRight size={13}/></button></div></section></div>
-    <div className="bottom-grid"><section className="panel"><div className="panel-head"><div><div className="eyebrow">TODAY'S FOCUS</div><h3>Make one idea practical</h3></div><span className="date-chip">24 NOV</span></div><div className="focus-card"><div className="focus-icon"><Newspaper size={18}/></div><div><b>Why cash flow matters more than a headline growth rate</b><p>Work through a short company-analysis case in the News Lab.</p><button className="text-btn" onClick={() => go("News Lab")}>Start the challenge <ArrowRight size={13}/></button></div></div></section><section className="panel mentor-panel"><div className="panel-head"><div><div className="eyebrow">YOUR PERSONAL GUIDE</div><h3>Ask the AI Mentor</h3></div><BrainCircuit size={20} className="muted-icon"/></div><p>Stuck on a concept? Challenge an assumption or get a clearer learning direction.</p><button className="outline-btn full-btn" onClick={() => go("AI Mentor")}>Open mentor <ArrowRight size={14}/></button></section></div>
+    <div className="bottom-grid"><section className="panel"><div className="panel-head"><div><div className="eyebrow">TODAY'S FOCUS</div><h3>Make one idea practical</h3></div><span className="date-chip">{new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "short" }).toUpperCase()}</span></div><div className="focus-card"><div className="focus-icon"><Newspaper size={18}/></div><div><b>Why cash flow matters more than a headline growth rate</b><p>Work through a short company-analysis case in the News Lab.</p><button className="text-btn" onClick={() => go("News Lab")}>Start the challenge <ArrowRight size={13}/></button></div></div></section><section className="panel mentor-panel"><div className="panel-head"><div><div className="eyebrow">YOUR PERSONAL GUIDE</div><h3>Ask the AI Mentor</h3></div><BrainCircuit size={20} className="muted-icon"/></div><p>Stuck on a concept? Challenge an assumption or get a clearer learning direction.</p><button className="outline-btn full-btn" onClick={() => go("AI Mentor")}>Open mentor <ArrowRight size={14}/></button></section></div>
   </>;
 }
 function Stat({label,value,sub,icon:Icon,trend}:{label:string;value:string;sub:string;icon:typeof Activity;trend:string}) {return <div className="stat-card"><div className="stat-top"><span>{label}</span><i><Icon size={17}/></i></div><strong>{value}</strong><p>{sub}</p><small>{trend}</small></div>}
