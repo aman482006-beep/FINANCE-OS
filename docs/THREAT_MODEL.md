@@ -18,7 +18,8 @@ The deployed code currently runs as a browser application with localStorage. Thi
 | Dependency compromise | Dependabot, npm audit and CodeQL workflows; review updates before merge |
 | Secret commits | Private vulnerability reporting; enable GitHub secret scanning/push protection in repository settings |
 | Stale financial facts | Provider provenance, exchange timezone, as-of timestamps and licence metadata required |
-| Reward farming / replay | Current point caps are enforced in browser state only; implement server-authoritative lesson/quiz attempt tracking, attempt limits, duplicate-award prevention and abuse monitoring before launch |\n| Privacy leakage | Avoid sensitive localStorage; implement retention, deletion and consent controls before launch |
+| Reward farming / replay | Current point caps are enforced in browser state only; implement server-authoritative lesson/quiz attempt tracking, attempt limits, duplicate-award prevention and abuse monitoring before launch |
+| Privacy leakage | Avoid sensitive localStorage; implement retention, deletion and consent controls before launch |
 
 ## Release blockers for public production
 
