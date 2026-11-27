@@ -7,6 +7,7 @@ export type ResourceItem = {
   access: "Free" | "Free course" | "Paid credential";
   level: "Beginner" | "Intermediate" | "Advanced" | "All levels";
   modules: string[];
+  careerTracks: string[];
   format: string;
 };
 
@@ -28,6 +29,7 @@ export const resourceLibrary: ResourceItem[] = [
     access: "Free",
     level: "Beginner",
     modules: ["foundations", "valuation", "portfolio", "macro"],
+    careerTracks: ["Corporate Finance & FP&A", "Private Equity & Venture Capital", "Risk & Quantitative Finance"],
     format: "Open textbook"
   },
   {
@@ -39,6 +41,7 @@ export const resourceLibrary: ResourceItem[] = [
     access: "Free course",
     level: "Beginner",
     modules: ["foundations", "markets", "portfolio"],
+    careerTracks: ["Asset & Portfolio Management", "Trading & Markets"],
     format: "Self-paced course"
   },
   {
@@ -50,6 +53,7 @@ export const resourceLibrary: ResourceItem[] = [
     access: "Free",
     level: "All levels",
     modules: ["foundations", "markets", "portfolio", "macro"],
+    careerTracks: ["Asset & Portfolio Management", "Trading & Markets"],
     format: "Lessons, videos and quizzes"
   },
   {
@@ -61,6 +65,7 @@ export const resourceLibrary: ResourceItem[] = [
     access: "Free",
     level: "All levels",
     modules: ["markets", "portfolio", "macro", "professional"],
+    careerTracks: ["Asset & Portfolio Management", "Financial Technology", "Trading & Markets"],
     format: "Official resource library"
   },
   {
@@ -72,6 +77,7 @@ export const resourceLibrary: ResourceItem[] = [
     access: "Free",
     level: "Beginner",
     modules: ["accounting", "modelling"],
+    careerTracks: ["Investment Banking", "Corporate Finance & FP&A"],
     format: "Open textbook"
   },
   {
@@ -83,6 +89,7 @@ export const resourceLibrary: ResourceItem[] = [
     access: "Free",
     level: "Advanced",
     modules: ["valuation", "modelling", "professional"],
+    careerTracks: ["Investment Banking", "Private Equity & Venture Capital"],
     format: "Course material and spreadsheets"
   },
   {
@@ -94,6 +101,7 @@ export const resourceLibrary: ResourceItem[] = [
     access: "Free",
     level: "Intermediate",
     modules: ["valuation", "macro", "modelling"],
+    careerTracks: ["Investment Banking", "Corporate Finance & FP&A", "Private Equity & Venture Capital", "Risk & Quantitative Finance"],
     format: "Lectures, data and spreadsheets"
   },
   {
@@ -105,6 +113,7 @@ export const resourceLibrary: ResourceItem[] = [
     access: "Free",
     level: "Beginner",
     modules: ["foundations", "markets", "portfolio"],
+    careerTracks: ["Asset & Portfolio Management", "Trading & Markets"],
     format: "Investor education"
   },
   {
@@ -116,6 +125,7 @@ export const resourceLibrary: ResourceItem[] = [
     access: "Free",
     level: "All levels",
     modules: ["accounting", "modelling", "professional"],
+    careerTracks: ["Investment Banking", "Corporate Finance & FP&A", "Financial Technology"],
     format: "Guides and tutorials"
   },
   {
@@ -127,6 +137,7 @@ export const resourceLibrary: ResourceItem[] = [
     access: "Paid credential",
     level: "Beginner",
     modules: ["markets", "portfolio", "professional"],
+    careerTracks: ["Asset & Portfolio Management", "Investment Banking", "Private Equity & Venture Capital"],
     format: "Self-paced certificate"
   }
 ];
