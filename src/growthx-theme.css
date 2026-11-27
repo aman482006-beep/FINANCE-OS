@@ -2,7 +2,7 @@
    Original visual system: warm neutral canvas, pine ink, lime/sage accents,
    spacious folder cards and progressive disclosure. No GrowthX assets or branding. */
 :root{
-  --gx-ink:#17241e;--gx-muted:#69766e;--gx-subtle:#8b968f;--gx-border:#e5e9e2;
+  --gx-ink:#17241e;--gx-muted:#58665c;--gx-subtle:#5b6a5f;--gx-border:#e5e9e2;
   --gx-bg:#f6f7f3;--gx-card:#fff;--gx-soft:#eef3ec;--gx-green:#246246;
   --gx-green-dark:#183e2c;--gx-lime:#d7f36c;--gx-blue:#e8f0f7;
   --gx-peach:#fff0e5;--gx-lavender:#efebfa;--gx-yellow:#fbf4d9;
@@ -116,8 +116,8 @@ body{background:var(--gx-bg)!important;color:var(--gx-ink)!important;font-family
 .gx-guidance-banner.compact{margin-top:8px}
 .gx-guidance-icon{width:38px;height:38px;display:grid;place-items:center;flex-shrink:0;border-radius:11px;background:#dcebd8;color:#2e704c}
 .gx-guidance-banner b{display:block;color:#294b36;font-size:13px}
-.gx-guidance-banner p{margin:4px 0 0;color:#607265;font-size:12px;line-height:1.6}
-.gx-guidance-step{margin-left:auto;color:#6c8a72;font:700 11px ui-monospace,monospace;white-space:nowrap}
+.gx-guidance-banner p{margin:4px 0 0;color:#506252;font-size:12px;line-height:1.6}
+.gx-guidance-step{margin-left:auto;color:#506b55;font:700 11px ui-monospace,monospace;white-space:nowrap}
 .gx-continue-card{display:flex;align-items:center;gap:13px;background:#fff;border:1px solid var(--gx-border);border-radius:13px;padding:15px 17px;margin-bottom:27px;box-shadow:var(--gx-shadow)}
 .gx-continue-icon{width:39px;height:39px;border-radius:11px;background:#f3f0df;color:#8c7424;display:grid;place-items:center;flex-shrink:0}
 .gx-continue-card>div:nth-child(2){flex:1;min-width:0}
@@ -144,7 +144,7 @@ body{background:var(--gx-bg)!important;color:var(--gx-ink)!important;font-family
 .gx-folder-label{font-size:9px;letter-spacing:1px;font-weight:800;color:#596b5f}
 .gx-folder-card>b,.gx-career-card>b{font-size:15px;line-height:1.35;letter-spacing:-.2px;color:var(--gx-ink)}
 .gx-folder-card>p,.gx-career-card>p{min-height:42px;font-size:11px;line-height:1.6;color:var(--gx-muted);margin:7px 0 15px}
-.gx-folder-card-bottom{display:flex;justify-content:space-between;gap:8px;margin-top:auto;padding-top:11px;border-top:1px solid #eff2ed;color:#748279;font-size:9px}
+.gx-folder-card-bottom{display:flex;justify-content:space-between;gap:8px;margin-top:auto;padding-top:11px;border-top:1px solid #eff2ed;color:#536259;font-size:9px}
 .gx-progress-line{height:5px;background:#eef2eb;border-radius:20px;overflow:hidden;margin-top:11px}
 .gx-progress-line span{display:block;height:100%;border-radius:20px;background:#80aa83}
 .gx-empty{padding:28px 18px;text-align:center;background:#fff;border:1px dashed #d8e2d6;border-radius:12px;color:var(--gx-muted);font-size:12px}
@@ -218,11 +218,11 @@ body{background:var(--gx-bg)!important;color:var(--gx-ink)!important;font-family
 .gx-resource-total{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:120px;padding:12px 18px;border-radius:14px;background:#fff;border:1px solid var(--gx-border)}
 .gx-resource-total strong{font-size:27px;color:var(--gx-green)}.gx-resource-total span{font-size:9px;color:var(--gx-muted)}
 .gx-filter-pills{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
-.gx-filter-pills button{padding:8px 10px;border:1px solid #e0e6dd;background:#fff;border-radius:20px;color:#718076;font-size:9px;cursor:pointer}
+.gx-filter-pills button{padding:8px 10px;border:1px solid #e0e6dd;background:#fff;border-radius:20px;color:#56665a;font-size:9px;cursor:pointer}
 .gx-filter-pills button.active{background:#eaf3e8;border-color:#c6d9c6;color:#2f6c46;font-weight:750}
 .gx-resource-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .gx-editorial-note{display:flex;align-items:flex-start;gap:9px;margin-top:20px;padding:12px 14px;border:1px solid #e3e8e0;border-radius:10px;background:#f6f8f3;color:#78857c}
-.gx-editorial-note p{margin:0;color:#6c7b70;font-size:10px;line-height:1.6}
+.gx-editorial-note p{margin:0;color:#526257;font-size:10px;line-height:1.6}
 .gx-career-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}
 .gx-career-card{min-height:170px}
 .gx-career-card p{min-height:36px}
@@ -244,7 +244,7 @@ body{background:var(--gx-bg)!important;color:var(--gx-ink)!important;font-family
 .gx-reward-card h2{font-size:16px;letter-spacing:-.4px;color:var(--gx-ink);margin:13px 0 5px}
 .gx-reward-card>p{font-size:10px;color:var(--gx-muted);line-height:1.6;min-height:34px}
 .gx-reward-cost{display:flex;align-items:center;justify-content:space-between;padding:10px 0;margin:10px 0;border-top:1px solid #edf0ea;border-bottom:1px solid #edf0ea}
-.gx-reward-cost strong{color:var(--gx-green);font-size:13px}.gx-reward-cost span{color:#849087;font-size:9px}
+.gx-reward-cost strong{color:var(--gx-green);font-size:13px}.gx-reward-cost span{color:#56665b;font-size:9px}
 .gx-reward-card .gx-primary-button,.gx-reward-card .gx-secondary-button{width:100%}
 .gx-reward-content{margin-top:14px;padding:13px;background:#f5f8f2;border:1px solid #e2eadd;border-radius:10px}
 .gx-reward-content>b{font-size:11px;color:var(--gx-ink)}
