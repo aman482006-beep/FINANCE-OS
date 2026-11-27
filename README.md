@@ -50,6 +50,6 @@ npm audit --audit-level=high
 
 ## Important product limitations
 
-This is a browser-first MVP, not a production financial service. Accounts are not authenticated; progress, simulated orders and analysis are stored only in browser localStorage. Prices and news cases are educational fixtures, not live or historical feeds. The AI Mentor is an integration placeholder; written review is a deterministic rubric, not an LLM or professional assessor. Research, spreadsheet import/export, fully integrated three-statement/LBO/M&A modelling, multi-agent Finance Council, real company data and interview simulations remain roadmap items.
+This is a browser-first MVP, not a production financial service. Accounts are not authenticated; progress, simulated orders, Dividend Points and reward unlocks are stored only in browser localStorage. Points have no cash value and are not financial dividends, securities or investment returns. Client-side points are demo mechanics and can be changed by a technically capable user. Prices and news cases are educational fixtures, not live or historical feeds. The AI Mentor is an integration placeholder; written review is a deterministic rubric, not an LLM or professional assessor. Research, spreadsheet import/export, fully integrated three-statement/LBO/M&A modelling, multi-agent Finance Council, real company data and interview simulations remain roadmap items.
 
 No broker is connected and no real orders are placed. Do not enter sensitive personal or financial information.
