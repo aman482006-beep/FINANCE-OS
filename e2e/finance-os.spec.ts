@@ -32,11 +32,12 @@ test("folder learning completion earns Dividend Points and persists", async ({ p
 test("a perfect folder quiz awards points and unlocks a useful reward", async ({ page }) => {
   await page.getByRole("button", { name: "Learn", exact: true }).click();
   await page.getByRole("button", { name: /Financial Foundations/ }).click();
+  await page.getByRole("button", { name: "Mark lesson complete" }).first().click();
   await page.getByText("Whether expected risk-adjusted benefits justify the cash outflow", { exact: true }).click();
   await page.getByText("Returns are earned on the original principal and previously earned returns", { exact: true }).click();
   await page.getByRole("button", { name: "Check answers" }).click();
   await expect(page.getByText(/Perfect score/)).toBeVisible();
-  await expect(page.locator(".topbar-dp")).toContainText("15 DP");
+  await expect(page.locator(".topbar-dp")).toContainText("20 DP");
   await page.getByRole("button", { name: "Rewards", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Analyst Starter Pack" })).toBeVisible();
   await page.getByRole("button", { name: "Unlock with points" }).first().click();
