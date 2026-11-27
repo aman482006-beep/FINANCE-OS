@@ -185,7 +185,7 @@ body{background:var(--gx-bg)!important;color:var(--gx-ink)!important;font-family
 .gx-resource-card:hover{border-color:#bdd4bf;transform:translateY(-1px)}
 .gx-resource-top{display:flex;align-items:center;justify-content:space-between;color:#586a5d;margin-bottom:3px}
 .gx-access{display:inline-flex;align-items:center;padding:5px 8px;border-radius:20px;background:#edf5ec;color:#44724d;font-size:9px;font-weight:750}
-.gx-access.paid{background:#fff2e5;color:#986a34}
+.gx-access.paid{background:#fff2e5;color:#795020}
 .gx-resource-card>b{font-size:12px;color:var(--gx-ink)}
 .gx-resource-card>small{font-size:10px;color:#59685e}
 .gx-resource-card>p{margin:2px 0 4px;font-size:10px;line-height:1.6;color:#56665b}
