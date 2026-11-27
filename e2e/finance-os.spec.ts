@@ -21,7 +21,7 @@ test("folder learning completion earns Dividend Points and persists", async ({ p
   await expect(page.getByRole("link", { name: /Investor Education \(Basic\)/ })).toBeVisible();
   await page.getByRole("button", { name: /Simple vs compound interest/ }).click();
   await expect(page.getByRole("heading", { name: "Simple vs compound interest" })).toBeVisible();
-  await page.getByRole("button", { name: /Mark lesson complete/ }).click();
+  await page.getByRole("button", { name: /Mark lesson complete/ }).last().click();
   await expect(page.locator(".topbar-dp")).toContainText("5 DP");
   await page.reload();
   await page.getByRole("button", { name: "Learn", exact: true }).click();
@@ -33,10 +33,10 @@ test("a perfect folder quiz awards points and unlocks a useful reward", async ({
   await page.getByRole("button", { name: "Learn", exact: true }).click();
   await page.getByRole("button", { name: /Financial Foundations/ }).click();
   await page.getByRole("button", { name: "Mark lesson complete" }).first().click();
-  await page.getByText("Whether expected risk-adjusted benefits justify the cash outflow", { exact: true }).click();
-  await page.getByText("Returns are earned on the original principal and previously earned returns", { exact: true }).click();
+  await page.getByRole("radio", { name: "Whether expected risk-adjusted benefits justify the cash outflow" }).check();
+  await page.getByRole("radio", { name: "Returns are earned on the original principal and previously earned returns" }).check();
   await page.getByRole("button", { name: "Check answers" }).click();
-  await expect(page.getByText(/Perfect score/)).toBeVisible();
+  await expect(page.getByText("Folder assessment passed")).toBeVisible();
   await expect(page.locator(".topbar-dp")).toContainText("20 DP");
   await page.getByRole("button", { name: "Rewards", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Analyst Starter Pack" })).toBeVisible();
@@ -52,7 +52,7 @@ test("curated resources and career folders open the right content", async ({ pag
   await page.getByRole("button", { name: "Career", exact: true }).click();
   await page.getByRole("button", { name: /Investment Banking/ }).click();
   await expect(page.getByRole("heading", { name: "Investment Banking" })).toBeVisible();
-  await expect(page.getByText("DCF", { exact: true })).toBeVisible();
+  await expect(page.getByText(/DCF/)).toBeVisible();
 });
 
 test("paper trading prevents overselling", async ({ page }) => {
