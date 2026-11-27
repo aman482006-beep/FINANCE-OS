@@ -55,6 +55,12 @@ test("curated resources and career folders open the right content", async ({ pag
   await expect(page.locator(".gx-skill-chip").filter({ hasText: "DCF" })).toBeVisible();
 });
 
+test("tampered negative Dividend Points are rejected on load", async ({ page }) => {
+  await page.evaluate(() => localStorage.setItem("fos-dividend-points", "-500"));
+  await page.reload();
+  await expect(page.locator(".topbar-dp")).toContainText("0 DP");
+});
+
 test("paper trading prevents overselling", async ({ page }) => {
   await page.getByRole("button", { name: "Markets", exact: true }).click();
   await page.getByRole("button", { name: "Simulate buy" }).click();
