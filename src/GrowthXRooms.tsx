@@ -15,6 +15,7 @@ type LearningRoomProps = {
   points: number;
   completedQuizzes: string[];
   onQuizPassed: (moduleId: string) => void;
+  onOpenRewards: () => void;
 };
 
 const moduleMeta: Record<string, { label: string; color: string; outcome: string }> = {
@@ -58,7 +59,7 @@ function ResourceCard({ resource }: { resource: (typeof resourceLibrary)[number]
   </a>;
 }
 
-export function LearningRoom({ completed, markComplete, setSelectedLesson, points, completedQuizzes, onQuizPassed }: LearningRoomProps) {
+export function LearningRoom({ completed, markComplete, setSelectedLesson, points, completedQuizzes, onQuizPassed, onOpenRewards }: LearningRoomProps) {
   const [activeModuleId, setActiveModuleId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [answers, setAnswers] = useState<Record<string, number>>({});
@@ -167,7 +168,7 @@ export function LearningRoom({ completed, markComplete, setSelectedLesson, point
     </> : <>
       <div className="gx-page-intro">
         <div><div className="gx-eyebrow">THE FINANCE OS LEARNING LIBRARY</div><h1>Learn finance. Build judgement.</h1><p>Pick a folder, follow a clear sequence, learn from the best resources on the internet and prove what you understood.</p></div>
-        <div className="gx-points-wallet"><span><Zap size={15}/> DIVIDEND POINTS</span><strong>{points.toLocaleString("en-IN")} <small>DP</small></strong><button onClick={() => window.dispatchEvent(new CustomEvent("finance-os-open-rewards"))}>View rewards <ArrowRight size={13}/></button></div>
+        <div className="gx-points-wallet"><span><Zap size={15}/> DIVIDEND POINTS</span><strong>{points.toLocaleString("en-IN")} <small>DP</small></strong><button onClick={onOpenRewards}>View rewards <ArrowRight size={13}/></button></div>
       </div>
       <div className="gx-guidance-banner"><div className="gx-guidance-icon"><Sparkles size={18}/></div><div><b>How this learning system works</b><p>Use a trusted external course for the explanation, open our lessons for finance-specific examples, then complete a short quiz. Finish folders to unlock points and practical case files.</p></div><span className="gx-guidance-step">01 / 03</span></div>
       <div className="gx-continue-card">
