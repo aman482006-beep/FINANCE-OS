@@ -29,16 +29,6 @@ const moduleMeta: Record<string, { label: string; color: string; outcome: string
   professional: { label: "CAREER READY", color: "mint", outcome: "Communicate assumptions and defend professional work." }
 };
 
-const resourceIdsByCareer: Record<string, string[]> = {
-  "Investment Banking": ["damodaran-valuation", "excel-support", "openstax-accounting"],
-  "Asset & Portfolio Management": ["zerodha-varsity", "nism-investor-ed", "nism-basic"],
-  "Private Equity & Venture Capital": ["damodaran-valuation", "damodaran-corpfin", "openstax-finance"],
-  "Corporate Finance & FP&A": ["openstax-finance", "excel-support", "openstax-accounting"],
-  "Risk & Quantitative Finance": ["openstax-finance", "damodaran-corpfin", "zerodha-varsity"],
-  "Trading & Markets": ["zerodha-varsity", "nse-investor", "nism-investor-ed"],
-  "Financial Technology": ["excel-support", "openstax-finance", "nism-investor-ed"]
-};
-
 const careerOutcomes: Record<string, string> = {
   "Investment Banking": "Build a three-statement model, DCF, comparable-company analysis and a concise transaction pitch.",
   "Asset & Portfolio Management": "Create an investment policy note, asset allocation, risk review and performance attribution.",
@@ -218,7 +208,7 @@ export function ResourcesRoom() {
 export function CareerRoom() {
   const [activeTrack, setActiveTrack] = useState<number | null>(null);
   const track = activeTrack === null ? null : tracks[activeTrack];
-  const recommendedResources = track ? (resourceIdsByCareer[track.name] ?? []).map(id => resourceLibrary.find(resource => resource.id === id)).filter(Boolean) as (typeof resourceLibrary[number])[] : [];
+  const recommendedResources = track ? resourceLibrary.filter(resource => resource.careerTracks.includes(track.name)) : [];
   return <div className="gx-room">
     {track && activeTrack !== null ? <>
       <div className="gx-room-breadcrumb"><button className="gx-back-link" onClick={() => setActiveTrack(null)}><ArrowLeft size={15}/> All career folders</button><span>/</span><span>{track.name}</span></div>
