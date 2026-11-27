@@ -32,15 +32,26 @@ const money = (v: number) => new Intl.NumberFormat("en-IN", { style: "currency",
 const readStored = <T,>(key: string, fallback: T): T => {
   try { const value = localStorage.getItem(key); return value ? JSON.parse(value) as T : fallback; } catch { return fallback; }
 };
+const readStoredStringArray = (key: string, fallback: string[]): string[] => {
+  const value = readStored<unknown>(key, fallback);
+  if (!Array.isArray(value) || value.some(item => typeof item !== "string")) return fallback;
+  return [...new Set(value)];
+};
+const readStoredPoints = (): number => {
+  const value = readStored<unknown>("fos-dividend-points", 0);
+  return typeof value === "number" && Number.isSafeInteger(value) && value >= 0 ? value : 0;
+};
+const validLessonIds = new Set(curriculum.flatMap(module => module.lessons.map(lesson => lesson.id)));
+const validModuleIds = new Set(curriculum.map(module => module.id));
 
 export default function App() {
   const [page, setPage] = useState<Page>("Overview");
   const [mobileNav, setMobileNav] = useState(false);
-  const [completed, setCompleted] = useState<string[]>(() => readStored("fos-completed", ["fin-101"]));
-  const [awardedLessons, setAwardedLessons] = useState<string[]>(() => readStored("fos-awarded-lessons", []));
-  const [completedQuizzes, setCompletedQuizzes] = useState<string[]>(() => readStored("fos-completed-quizzes", []));
-  const [dividendPoints, setDividendPoints] = useState<number>(() => readStored("fos-dividend-points", 0));
-  const [unlockedRewards, setUnlockedRewards] = useState<string[]>(() => readStored("fos-unlocked-rewards", []));
+  const [completed, setCompleted] = useState<string[]>(() => readStoredStringArray("fos-completed", ["fin-101"]).filter(id => validLessonIds.has(id)));
+  const [awardedLessons, setAwardedLessons] = useState<string[]>(() => readStoredStringArray("fos-awarded-lessons", []).filter(id => validLessonIds.has(id)));
+  const [completedQuizzes, setCompletedQuizzes] = useState<string[]>(() => readStoredStringArray("fos-completed-quizzes", []).filter(id => validModuleIds.has(id)));
+  const [dividendPoints, setDividendPoints] = useState<number>(() => readStoredPoints());
+  const [unlockedRewards, setUnlockedRewards] = useState<string[]>(() => readStoredStringArray("fos-unlocked-rewards", []));
   const [trades, setTrades] = useState<Trade[]>(() => readStored("fos-trades", []));
   const [cash, setCash] = useState(() => readStored("fos-cash", 1000000));
   const [mentorInput, setMentorInput] = useState("");
@@ -85,6 +96,7 @@ export default function App() {
   const save = (key: string, value: unknown) => { try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* storage may be unavailable */ } };
   const go = (next: Page) => { setPage(next); setMobileNav(false); setNotice(""); };
   const markComplete = (id: string) => {
+    if (!validLessonIds.has(id)) { setNotice("This lesson cannot be recorded because its ID is not in the curriculum."); return; }
     const isComplete = completed.includes(id);
     const next = isComplete ? completed.filter(x => x !== id) : [...completed, id];
     setCompleted(next); save("fos-completed", next);
@@ -97,7 +109,7 @@ export default function App() {
     }
   };
   const onQuizPassed = (moduleId: string) => {
-    if (completedQuizzes.includes(moduleId)) return;
+    if (!validModuleIds.has(moduleId) || completedQuizzes.includes(moduleId)) return;
     const nextQuizzes = [...completedQuizzes, moduleId];
     const nextPoints = dividendPoints + 15;
     setCompletedQuizzes(nextQuizzes); save("fos-completed-quizzes", nextQuizzes);
