@@ -12,6 +12,15 @@ Finance OS is one continuous learning and practice environment. Learning, assess
 - Career track directory and starter valuation workbench.
 - Progress snapshot and AI mentor integration boundary.
 
+## Delivered in the current browser prototype (feature branch)
+
+- Folder-first learning room with one folder per curriculum domain and lesson drill-down.
+- Curated external resources mapped to curriculum topics and career paths.
+- Sixteen starter multiple-choice knowledge checks across the eight learning domains.
+- Browser-only Dividend Points: 5 DP for first-time lesson completion, 15 DP for a perfect folder quiz, and four redeemable in-product practice packs. Points are fictional, non-monetary and user-editable in localStorage.
+- Seven folder-based career pathways with skill maps, practical outcomes and relevant resources.
+- Responsive warm-neutral visual refresh inspired by modern cohort-learning products, without copying third-party branding or assets.
+
 ## Phase 1 — core learning platform
 - Server-side authentication and profile settings.
 - Structured content model with lesson content, examples, exercises, worked calculations and assessment rubrics.
