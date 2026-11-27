@@ -68,7 +68,7 @@ body{background:var(--gx-bg)!important;color:var(--gx-ink)!important;font-family
 .input-grid label,.order-panel label{color:var(--gx-muted)!important}
 .input-grid input,.order-panel input,.order-panel select,.chat-input input,.chat-input textarea{background:#fff!important;color:var(--gx-ink)!important;border:1px solid #dbe2d9!important;border-radius:8px!important}
 .watch-table,.trade-history{color:var(--gx-ink)!important}
-.table-head{color:#7a897f!important;border-color:var(--gx-border)!important}
+.table-head{color:#52645a!important;border-color:var(--gx-border)!important}
 .watch-row,.trade-history>div{border-color:var(--gx-border)!important}
 .watch-row b,.trade-history b{color:var(--gx-ink)!important}
 .positive{color:#28784c!important}.negative{color:#b0524a!important}
