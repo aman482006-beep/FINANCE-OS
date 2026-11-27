@@ -1,21 +1,24 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { Activity, ArrowDownRight, ArrowRight, ArrowUpRight, BarChart3, BookOpen, BriefcaseBusiness, BrainCircuit, Check, ChevronDown, ChevronRight, CircleHelp, Clock3, Coins, Compass, GraduationCap, LayoutDashboard, LineChart, Menu, Newspaper, Plus, Search, Send, ShieldCheck, Sparkles, Target, TrendingUp, Wallet, X, Zap } from "lucide-react";
+import { Activity, ArrowDownRight, ArrowRight, ArrowUpRight, BarChart3, BookMarked, BookOpen, BriefcaseBusiness, BrainCircuit, Check, ChevronDown, ChevronRight, CircleHelp, Clock3, Coins, Compass, Gift, GraduationCap, LayoutDashboard, LineChart, Menu, Newspaper, Plus, Search, Send, ShieldCheck, Sparkles, Target, TrendingUp, Wallet, X, Zap } from "lucide-react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { curriculum, newsCases, tracks, watchlist } from "./data";
 import { lessonContent } from "./data/lessonContent";
 import { deriveHoldings, executeSimulatedOrder } from "./lib/simulator";
 import { calculateDcf } from "./lib/finance";
 import { reviewAnalysis } from "./lib/review";
+import { CareerRoom, LearningRoom, ResourcesRoom, RewardsRoom } from "./GrowthXRooms";
 
-type Page = "Overview" | "Learn" | "Markets" | "News Lab" | "Career" | "Workbench" | "My Progress" | "AI Mentor";
+type Page = "Overview" | "Learn" | "Resources" | "Markets" | "News Lab" | "Career" | "Workbench" | "Rewards" | "My Progress" | "AI Mentor";
 type Trade = { symbol: string; side: "BUY" | "SELL"; quantity: number; price: number; date: string };
 const nav: { label: Page; icon: typeof LayoutDashboard; group: string }[] = [
   { label: "Overview", icon: LayoutDashboard, group: "Workspace" },
   { label: "Learn", icon: BookOpen, group: "Workspace" },
+  { label: "Resources", icon: BookMarked, group: "Workspace" },
   { label: "Markets", icon: LineChart, group: "Workspace" },
   { label: "News Lab", icon: Newspaper, group: "Workspace" },
   { label: "Career", icon: BriefcaseBusiness, group: "Develop" },
   { label: "Workbench", icon: Coins, group: "Develop" },
+  { label: "Rewards", icon: Gift, group: "Develop" },
   { label: "My Progress", icon: Target, group: "Develop" },
   { label: "AI Mentor", icon: BrainCircuit, group: "Develop" }
 ];
@@ -34,6 +37,10 @@ export default function App() {
   const [page, setPage] = useState<Page>("Overview");
   const [mobileNav, setMobileNav] = useState(false);
   const [completed, setCompleted] = useState<string[]>(() => readStored("fos-completed", ["fin-101"]));
+  const [awardedLessons, setAwardedLessons] = useState<string[]>(() => readStored("fos-awarded-lessons", []));
+  const [completedQuizzes, setCompletedQuizzes] = useState<string[]>(() => readStored("fos-completed-quizzes", []));
+  const [dividendPoints, setDividendPoints] = useState<number>(() => readStored("fos-dividend-points", 0));
+  const [unlockedRewards, setUnlockedRewards] = useState<string[]>(() => readStored("fos-unlocked-rewards", []));
   const [trades, setTrades] = useState<Trade[]>(() => readStored("fos-trades", []));
   const [cash, setCash] = useState(() => readStored("fos-cash", 1000000));
   const [mentorInput, setMentorInput] = useState("");
@@ -78,8 +85,36 @@ export default function App() {
   const save = (key: string, value: unknown) => { try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* storage may be unavailable */ } };
   const go = (next: Page) => { setPage(next); setMobileNav(false); setNotice(""); };
   const markComplete = (id: string) => {
-    const next = completed.includes(id) ? completed.filter(x => x !== id) : [...completed, id];
+    const isComplete = completed.includes(id);
+    const next = isComplete ? completed.filter(x => x !== id) : [...completed, id];
     setCompleted(next); save("fos-completed", next);
+    if (!isComplete && !awardedLessons.includes(id)) {
+      const nextAwards = [...awardedLessons, id];
+      const nextPoints = dividendPoints + 5;
+      setAwardedLessons(nextAwards); save("fos-awarded-lessons", nextAwards);
+      setDividendPoints(nextPoints); save("fos-dividend-points", nextPoints);
+      setNotice("Lesson completed · 5 Dividend Points earned. Keep building your learning streak.");
+    }
+  };
+  const onQuizPassed = (moduleId: string) => {
+    if (completedQuizzes.includes(moduleId)) return;
+    const nextQuizzes = [...completedQuizzes, moduleId];
+    const nextPoints = dividendPoints + 15;
+    setCompletedQuizzes(nextQuizzes); save("fos-completed-quizzes", nextQuizzes);
+    setDividendPoints(nextPoints); save("fos-dividend-points", nextPoints);
+    setNotice("Knowledge check passed · 15 Dividend Points earned.");
+  };
+  const redeemReward = (rewardId: string, cost: number) => {
+    if (unlockedRewards.includes(rewardId)) return;
+    if (!Number.isSafeInteger(cost) || cost < 0 || dividendPoints < cost) {
+      setNotice("Not enough Dividend Points to unlock this reward.");
+      return;
+    }
+    const nextUnlocked = [...unlockedRewards, rewardId];
+    const nextPoints = dividendPoints - cost;
+    setUnlockedRewards(nextUnlocked); save("fos-unlocked-rewards", nextUnlocked);
+    setDividendPoints(nextPoints); save("fos-dividend-points", nextPoints);
+    setNotice("Reward unlocked in your Finance OS library.");
   };
   const executeTrade = () => {
     const security = watchlist.find(s => s.symbol === tradeSymbol);
@@ -136,15 +171,16 @@ export default function App() {
     </aside>
     {mobileNav && <div className="scrim" onClick={() => setMobileNav(false)}/>}
     <main id="main-content" tabIndex={-1} className="main-area">
-      <header className="topbar"><div className="crumb"><button className="icon-btn menu-btn" aria-label="Open navigation" aria-controls="primary-sidebar" aria-expanded={mobileNav} onClick={() => setMobileNav(true)}><Menu size={19}/></button><span>Finance OS</span><ChevronRight size={14}/><b>{page}</b></div><div className="top-actions"><div className="live-pill"><span/> Demo environment</div><button className="top-avatar" aria-label="AM — Open progress profile" onClick={() => go("My Progress")}>AM</button></div></header>
+      <header className="topbar"><div className="crumb"><button className="icon-btn menu-btn" aria-label="Open navigation" aria-controls="primary-sidebar" aria-expanded={mobileNav} onClick={() => setMobileNav(true)}><Menu size={19}/></button><span>Finance OS</span><ChevronRight size={14}/><b>{page}</b></div><div className="top-actions"><div className="live-pill"><span/> Demo environment</div><button className="topbar-dp" onClick={() => go("Rewards")} aria-label={`Open rewards wallet: ${dividendPoints} Dividend Points`}><Zap size={14}/><b>{dividendPoints.toLocaleString("en-IN")} DP</b></button><button className="top-avatar" aria-label="AM — Open progress profile" onClick={() => go("My Progress")}>AM</button></div></header>
       <div className="content">
         {notice && <div className="notice"><ShieldCheck size={16}/>{notice}<button aria-label="Dismiss notification" onClick={() => setNotice("")}><X size={15}/></button></div>}
         {page === "Overview" && <Overview progress={progress} completed={completed.length} total={total} go={go} cash={cash} invested={invested} trades={trades.length} />}
         {page === "Learn" && <Learn completed={completed} markComplete={markComplete} setSelectedLesson={setSelectedLesson} search={search} setSearch={setSearch}/>}
         {page === "Markets" && <Markets cash={cash} invested={invested} holdings={holdings} trades={trades} tradeSymbol={tradeSymbol} setTradeSymbol={setTradeSymbol} tradeQty={tradeQty} setTradeQty={setTradeQty} tradeSide={tradeSide} setTradeSide={setTradeSide} executeTrade={executeTrade}/>}
         {page === "News Lab" && <NewsLab active={activeNews} setActive={id => {setActiveNews(id); setNewsAnswer(""); setNewsSubmitted(false); setNewsReview(null);}} answer={newsAnswer} setAnswer={setNewsAnswer} submitted={newsSubmitted} review={newsReview} submit={submitNews}/>}
-        {page === "Career" && <Career />}
+        {page === "Career" && <CareerRoom/>}
         {page === "Workbench" && <Workbench />}
+        {page === "Rewards" && <RewardsRoom points={dividendPoints} unlockedIds={unlockedRewards} onRedeem={redeemReward}/>}
         {page === "My Progress" && <Progress completed={completed} total={total} progress={progress} trades={trades.length}/>}
         {page === "AI Mentor" && <Mentor messages={mentorMessages} value={mentorInput} setValue={setMentorInput} submit={submitMentor}/>}
       </div>
