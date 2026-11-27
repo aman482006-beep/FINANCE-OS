@@ -52,7 +52,7 @@ test("curated resources and career folders open the right content", async ({ pag
   await page.getByRole("button", { name: "Career", exact: true }).click();
   await page.getByRole("button", { name: /Investment Banking/ }).click();
   await expect(page.getByRole("heading", { name: "Investment Banking" })).toBeVisible();
-  await expect(page.getByText(/DCF/)).toBeVisible();
+  await expect(page.locator(".gx-skill-chip").filter({ hasText: "DCF" })).toBeVisible();
 });
 
 test("paper trading prevents overselling", async ({ page }) => {
